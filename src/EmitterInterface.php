@@ -20,6 +20,7 @@ interface EmitterInterface
      * response; e.g., if headers have already been sent.
      *
      * @param \Psr\Http\Message\ResponseInterface $response
+     * @param int                                 $maxBufferLevel Maximum output buffering level to unwrap.
      */
-    public function emit(ResponseInterface $response);
+    public function emit(ResponseInterface $response, int $maxBufferLevel = 0);
 }

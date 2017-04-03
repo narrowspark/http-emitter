@@ -38,11 +38,13 @@ class AbstractSapiEmitter implements EmitterInterface
      */
     protected function emitStatusLine(ResponseInterface $response): void
     {
-        header(sprintf(
-            'HTTP/%s %d %s',
-            $response->getProtocolVersion(),
-            $response->getStatusCode(),
-            $response->getReasonPhrase()
+        header(vsprintf(
+            'HTTP/%s %d%s',
+            [
+                $response->getProtocolVersion(),
+                $response->getStatusCode(),
+                rtrim(' ' . $response->getReasonPhrase())
+            ]
         ));
     }
 
@@ -61,7 +63,7 @@ class AbstractSapiEmitter implements EmitterInterface
     protected function emitHeaders(ResponseInterface $response): void
     {
         foreach ($response->getHeaders() as $header => $values) {
-            $name  = $this->filterHeader($header);
+            $name  = $this->toWordCase($header);
             $first = true;
 
             foreach ($values as $value) {
@@ -122,13 +124,13 @@ class AbstractSapiEmitter implements EmitterInterface
     }
 
     /**
-     * Filter a header name to wordcase.
+     * Converts header names to wordcase.
      *
      * @param string $header
      *
      * @return string
      */
-    protected function filterHeader(string $header): string
+    protected function toWordCase(string $header): string
     {
         $filtered = str_replace('-', ' ', $header);
         $filtered = ucwords($filtered);
