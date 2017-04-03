@@ -5,7 +5,6 @@
 .php_cs.cache
 
 composer.phar
-composer.lock
 
 /build/logs
 /vendor
