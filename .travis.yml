@@ -1,0 +1,27 @@
+language: php
+
+sudo: false
+
+matrix:
+  include:
+    - php: 7.1
+  fast_finish: true
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+install:
+  travis_retry composer install --no-interaction --prefer-dist --no-progress --profile --no-suggest
+
+script:
+  - ./build/travis/script.sh
+
+after_success:
+  - ./build/travis/after_success.sh
+
+notifications:
+  email: false
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/5886ad33ac123a7c06b0

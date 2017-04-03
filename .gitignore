@@ -1,0 +1,11 @@
+# Your tools may add their own folders and files to the project.
+# Ignoring those within your global gitignore will make it so
+# they will never get commited within any project you have.
+
+.php_cs.cache
+
+composer.phar
+composer.lock
+
+/build/logs
+/vendor
