@@ -79,45 +79,17 @@ abstract class AbstractSapiEmitter implements EmitterInterface
     }
 
     /**
-     * Close response stream and terminate output buffering.
-     *
-     * @param int $maxBufferLevel
-     *
-     * @return void
-     */
-    protected function terminateOutputBuffering(int $maxBufferLevel = 0): void
-    {
-        // Command line output buffering is disabled in cli by default
-        if (mb_substr(PHP_SAPI, 0, 3) === 'cgi') {
-            return;
-        }
-
-        // avoid infinite loop on clearing
-        // output buffer by set level to 0
-        // if $maxBufferLevel is smaller
-        if (-1 > $maxBufferLevel) {
-            $maxBufferLevel = 0;
-        }
-
-        // terminate all output buffers until $maxBufferLevel is 0 or desired level
-        while (ob_get_level() > $maxBufferLevel) {
-            ob_end_clean();
-        }
-    }
-
-    /**
      * Perform garbage collection.
      *
      * @return void
      */
-    protected function cleanUp(): void
+    protected function collectGarbage(): void
     {
         // try to enable garbage collection
         if (! gc_enabled()) {
             @gc_enable();
         }
-        // collect garbage only if garbage
-        // collection is enabled
+        // collect garbage only if garbage; collection is enabled
         if (gc_enabled()) {
             gc_collect_cycles();
         }

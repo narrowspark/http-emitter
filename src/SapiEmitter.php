@@ -35,14 +35,21 @@ class SapiEmitter extends AbstractSapiEmitter
 
         $response = $this->injectContentLength($response);
 
-        //Emit the HTTP status line
+        // Emit the HTTP status line
         $this->emitStatusLine($response);
-        //Emit the HTTP headers
+        // Emit the HTTP headers
         $this->emitHeaders($response);
-        $this->terminateOutputBuffering($this->maxBufferLevel);
-        //Emit the body
+        // Emit the body
         $this->sendBody($response);
-        $this->cleanUp();
+
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        } elseif (php_sapi_name() == 'cli' || php_sapi_name() == 'phpdbg') {
+            // Command line output buffering is disabled in cli by default.
+            $this->collectGarbage();
+
+            Util::closeOutputBuffers($this->maxBufferLevel, true);
+        }
     }
 
     /**
