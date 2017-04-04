@@ -37,7 +37,7 @@
         "exclude-from-classmap"                 : ["tests/"]
     },
     "autoload-dev": {
-        "files"                                 : ["tests/sapiEmitterFunctions.php"],
+        "files"                                 : ["tests/OverwritePhpFunctions.php"],
         "psr-4": {
             "Narrowspark\\HttpEmitter\\Tests\\" : "tests/"
         }

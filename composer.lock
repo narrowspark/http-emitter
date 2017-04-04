@@ -4,7 +4,6 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "c350d74d35bcdf74f424123e20e8d910",
     "content-hash": "535116ac44fcd368236ef370a926802a",
     "packages": [
         {
@@ -394,7 +393,7 @@
                 "object",
                 "object graph"
             ],
-            "time": "2017-01-26 22:05:40"
+            "time": "2017-01-26T22:05:40+00:00"
         },
         {
             "name": "narrowspark/php-cs-fixer-config",
@@ -444,7 +443,7 @@
                 "narrowspark",
                 "php-cs-fixer"
             ],
-            "time": "2016-12-18 12:53:34"
+            "time": "2016-12-18T12:53:34+00:00"
         },
         {
             "name": "nette/bootstrap",
@@ -1087,7 +1086,7 @@
                 "pseudorandom",
                 "random"
             ],
-            "time": "2017-03-13 16:27:32"
+            "time": "2017-03-13T16:27:32+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -1189,7 +1188,7 @@
                 }
             ],
             "description": "Library for handling version information and constraints",
-            "time": "2017-03-05 17:38:23"
+            "time": "2017-03-05T17:38:23+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -1288,7 +1287,7 @@
                 }
             ],
             "description": "With this component, a library can provide support for annotations via DocBlocks or otherwise retrieve information that is embedded in a DocBlock.",
-            "time": "2016-09-30 07:12:33"
+            "time": "2016-09-30T07:12:33+00:00"
         },
         {
             "name": "phpdocumentor/type-resolver",
@@ -1335,7 +1334,7 @@
                     "email": "me@mikevanriel.com"
                 }
             ],
-            "time": "2016-11-25 06:54:22"
+            "time": "2016-11-25T06:54:22+00:00"
         },
         {
             "name": "phpspec/prophecy",
@@ -1603,7 +1602,7 @@
             "keywords": [
                 "template"
             ],
-            "time": "2015-06-21 13:50:34"
+            "time": "2015-06-21T13:50:34+00:00"
         },
         {
             "name": "phpunit/php-timer",
@@ -2458,12 +2457,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "1030e321ade9b3cd5b9294262a27656ff06896c4"
+                "reference": "a52a4c714f576f0cd5ce622d63b6c583b1bca473"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/1030e321ade9b3cd5b9294262a27656ff06896c4",
-                "reference": "1030e321ade9b3cd5b9294262a27656ff06896c4",
+                "url": "https://api.github.com/repos/symfony/console/zipball/a52a4c714f576f0cd5ce622d63b6c583b1bca473",
+                "reference": "a52a4c714f576f0cd5ce622d63b6c583b1bca473",
                 "shasum": ""
             },
             "require": {
@@ -2518,7 +2517,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-            "time": "2017-03-27 14:51:00"
+            "time": "2017-04-04 15:00:37"
         },
         {
             "name": "symfony/debug",
@@ -2526,12 +2525,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/debug.git",
-                "reference": "105f6a21065954b6449e47effb98bdae8317e733"
+                "reference": "3670057096c5ef37cad425c761fb3cd0eb34d0e5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/debug/zipball/105f6a21065954b6449e47effb98bdae8317e733",
-                "reference": "105f6a21065954b6449e47effb98bdae8317e733",
+                "url": "https://api.github.com/repos/symfony/debug/zipball/3670057096c5ef37cad425c761fb3cd0eb34d0e5",
+                "reference": "3670057096c5ef37cad425c761fb3cd0eb34d0e5",
                 "shasum": ""
             },
             "require": {
@@ -2574,7 +2573,7 @@
             ],
             "description": "Symfony Debug Component",
             "homepage": "https://symfony.com",
-            "time": "2017-02-18 17:35:19"
+            "time": "2017-04-04 07:47:41"
         },
         {
             "name": "symfony/event-dispatcher",
@@ -2582,12 +2581,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "6813d5fde9b4263e3ba968f654d4913733e0996c"
+                "reference": "c4556af177973c51806894cb6e56e206698132d6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/6813d5fde9b4263e3ba968f654d4913733e0996c",
-                "reference": "6813d5fde9b4263e3ba968f654d4913733e0996c",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/c4556af177973c51806894cb6e56e206698132d6",
+                "reference": "c4556af177973c51806894cb6e56e206698132d6",
                 "shasum": ""
             },
             "require": {
@@ -2637,7 +2636,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2017-03-21 21:44:47"
+            "time": "2017-04-04 07:47:41"
         },
         {
             "name": "symfony/filesystem",
