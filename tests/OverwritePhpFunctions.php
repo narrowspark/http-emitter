@@ -7,8 +7,8 @@ use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
 /**
  * Have headers been sent?
  *
- * @param string $file
- * @param int    $line
+ * @param string|null $file
+ * @param int|null    $line
  *
  * @return false
  */
