@@ -3,6 +3,7 @@
 # they will never get commited within any project you have.
 
 .php_cs.cache
+coverage.xml
 
 composer.phar
 
