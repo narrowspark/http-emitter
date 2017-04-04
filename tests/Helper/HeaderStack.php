@@ -10,7 +10,7 @@ class HeaderStack
     private static $data = [];
 
     /**
-     * Reset state
+     * Reset state.
      *
      * @return void
      */
@@ -20,7 +20,7 @@ class HeaderStack
     }
 
     /**
-     * Push a header on the stack
+     * Push a header on the stack.
      *
      * @param string $header
      */
@@ -30,7 +30,7 @@ class HeaderStack
     }
 
     /**
-     * Return the current header stack
+     * Return the current header stack.
      *
      * @return array
      */

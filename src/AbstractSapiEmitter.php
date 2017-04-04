@@ -43,7 +43,7 @@ abstract class AbstractSapiEmitter implements EmitterInterface
             [
                 $response->getProtocolVersion(),
                 $response->getStatusCode(),
-                rtrim(' ' . $response->getReasonPhrase())
+                rtrim(' ' . $response->getReasonPhrase()),
             ]
         ));
     }

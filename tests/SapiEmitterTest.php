@@ -2,12 +2,11 @@
 declare(strict_types=1);
 namespace Narrowspark\HttpEmitter\Tests;
 
-use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
-use Zend\Diactoros\Response;
 use Narrowspark\HttpEmitter\SapiEmitter;
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
+use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\StreamInterface;
+use Zend\Diactoros\Response;
 
 class SapiEmitterTest extends TestCase
 {

@@ -15,7 +15,7 @@ function headers_sent(): bool
 }
 
 /**
- * Emit a header, without creating actual output artifacts
+ * Emit a header, without creating actual output artifacts.
  *
  * @param string $value
  */
@@ -23,4 +23,3 @@ function header($value)
 {
     HeaderStack::push($value);
 }
-
