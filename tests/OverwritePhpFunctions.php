@@ -12,7 +12,7 @@ use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
  *
  * @return false
  */
-function headers_sent(string &$file, int &$line): bool
+function headers_sent($file, $line): bool
 {
     return false;
 }
