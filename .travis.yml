@@ -5,14 +5,20 @@ sudo: false
 matrix:
   include:
     - php: 7.1
+      env: SETUP=basic SEND_COVERAGE=true PHPUNIT=true
+    - php: 7.1
+      env: SETUP=basic PHPSTAN=true PHPUNIT=false
   fast_finish: true
 
 cache:
   directories:
     - $HOME/.composer/cache
 
+before_install:
+  - chmod a+x ./build/travis/script.sh && chmod a+x ./build/travis/after_success.sh
+
 install:
-  travis_retry composer install --no-interaction --prefer-dist --no-progress --profile --no-suggest
+  - travis_retry composer install --no-interaction --prefer-dist --no-progress --profile --no-suggest
 
 script:
   - ./build/travis/script.sh
