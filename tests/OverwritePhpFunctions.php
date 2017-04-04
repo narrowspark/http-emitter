@@ -7,9 +7,12 @@ use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
 /**
  * Have headers been sent?
  *
+ * @param string $file
+ * @param int    $line
+ *
  * @return false
  */
-function headers_sent(): bool
+function headers_sent(string &$file, int &$line): bool
 {
     return false;
 }

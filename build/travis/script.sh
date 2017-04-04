@@ -10,8 +10,11 @@ bash -e <<TRY
         ./vendor/bin/phpstan analyse -c phpstan.neon -l 5 src
     fi
 
-    if [[ "$PHPUNIT" = true && "$SEND_COVERAGE" = true ]]; then
+    if [[ "$CS" = true ]]; then
         ./vendor/bin/php-cs-fixer fix --config=.php_cs --verbose --diff --dry-run
+    fi
+
+    if [[ "$PHPUNIT" = true && "$SEND_COVERAGE" = true ]]; then
         ./vendor/bin/phpunit -c phpunit.xml.dist --verbose --coverage-text="php://stdout" --coverage-clover=coverage.xml;
     fi
 TRY
