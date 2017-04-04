@@ -4,7 +4,7 @@ namespace Narrowspark\HttpEmitter;
 
 use Psr\Http\Message\ResponseInterface;
 
-class AbstractSapiEmitter implements EmitterInterface
+abstract class AbstractSapiEmitter implements EmitterInterface
 {
     /**
      * Inject the Content-Length header if is not already present.

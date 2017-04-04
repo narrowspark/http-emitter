@@ -5,12 +5,29 @@ namespace Narrowspark\HttpEmitter;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 
-class Emitter extends AbstractSapiEmitter
+class SapiEmitter extends AbstractSapiEmitter
 {
+    /**
+     * Maximum output buffering level to unwrap.
+     *
+     * @var int
+     */
+    protected $maxBufferLevel = 0;
+
+    /**
+     * Set the maximum output buffering level.
+     *
+     * @param int $maxBufferLevel
+     */
+    public function setMaxBufferLevel(int $maxBufferLevel)
+    {
+        $this->maxBufferLevel = $maxBufferLevel;
+    }
+
     /**
      * {@inheritdoc}
      */
-    public function emit(ResponseInterface $response, int $maxBufferLevel = 0)
+    public function emit(ResponseInterface $response)
     {
         if (headers_sent()) {
             throw new RuntimeException('Unable to emit response: headers already sent.');
@@ -22,7 +39,7 @@ class Emitter extends AbstractSapiEmitter
         $this->emitStatusLine($response);
         //Emit the HTTP headers
         $this->emitHeaders($response);
-        $this->terminateOutputBuffering($maxBufferLevel);
+        $this->terminateOutputBuffering($this->maxBufferLevel);
         //Emit the body
         $this->sendBody($response);
         $this->cleanUp();
