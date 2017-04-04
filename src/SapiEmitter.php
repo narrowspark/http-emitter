@@ -10,9 +10,9 @@ class SapiEmitter extends AbstractSapiEmitter
     /**
      * Maximum output buffering level to unwrap.
      *
-     * @var int
+     * @var int|null
      */
-    protected $maxBufferLevel = 0;
+    protected $maxBufferLevel;
 
     /**
      * Set the maximum output buffering level.
@@ -48,7 +48,7 @@ class SapiEmitter extends AbstractSapiEmitter
             // Command line output buffering is disabled in cli by default.
             $this->collectGarbage();
 
-            Util::closeOutputBuffers($this->maxBufferLevel, true);
+            Util::closeOutputBuffers($this->maxBufferLevel ?? ob_get_level(), true);
         }
     }
 
@@ -59,6 +59,6 @@ class SapiEmitter extends AbstractSapiEmitter
      */
     protected function sendBody(ResponseInterface $response)
     {
-        echo (string) $response->getBody();
+        echo $response->getBody();
     }
 }

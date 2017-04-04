@@ -63,6 +63,7 @@ class SapiEmitterTest extends TestCase
         $stream = $this->prophesize(StreamInterface::class);
         $stream->__toString()->willReturn('Content!');
         $stream->getSize()->willReturn(null);
+
         $response = (new Response())
             ->withStatus(200)
             ->withBody($stream->reveal());
