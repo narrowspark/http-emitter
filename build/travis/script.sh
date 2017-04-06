@@ -15,7 +15,7 @@ bash -e <<TRY
     fi
 
     if [[ "$PHPUNIT" = true && "$SEND_COVERAGE" = true ]]; then
-        ./vendor/bin/phpunit -c phpunit.xml.dist --verbose --coverage-text="php://stdout" --coverage-clover=coverage.xml;
+        ./vendor/bin/phpunit -c phpunit.xml.dist --verbose --coverage-clover=coverage.xml;
     fi
 TRY
 if [ $? -ne 0 ]; then
