@@ -2,33 +2,27 @@
 declare(strict_types=1);
 namespace Narrowspark\HttpEmitter\Tests;
 
-use Narrowspark\HttpEmitter\SapiEmitter;
-use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
-use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\StreamInterface;
+/**
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @see       http://github.com/zendframework/zend-diactoros for the canonical source repository
+ * @copyright Copyright (c) 2015-2016 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   https://github.com/zendframework/zend-diactoros/blob/master/LICENSE.md New BSD License
+ */
+
 use Zend\Diactoros\Response;
 
-class SapiEmitterTest extends TestCase
+class SapiEmitterTest extends AbstractEmitterTest
 {
-    /**
-     * @var \Narrowspark\HttpEmitter\SapiEmitter
-     */
-    protected $emitter;
-
-    public function setUp()
+    public function testEmitsBufferLevel()
     {
-        HeaderStack::reset();
+        ob_start();
+        echo "level" . ob_get_level() . " "; // 2
+        ob_start();
+        echo "level" . ob_get_level() . " "; // 3
+        ob_start();
+        echo "level" . ob_get_level() . " "; // 4
 
-        $this->emitter = new SapiEmitter();
-    }
-
-    public function tearDown()
-    {
-        HeaderStack::reset();
-    }
-
-    public function testEmitsResponseHeaders()
-    {
         $response = (new Response())
             ->withStatus(200)
             ->withAddedHeader('Content-Type', 'text/plain');
@@ -38,43 +32,18 @@ class SapiEmitterTest extends TestCase
 
         $this->emitter->emit($response);
 
-        ob_end_clean();
-
-        $this->assertContains('HTTP/1.1 200 OK', HeaderStack::stack());
-        $this->assertContains('Content-Type: text/plain', HeaderStack::stack());
-        $this->assertContains('Content-Length: 8', HeaderStack::stack());
-    }
-
-    public function testEmitsMessageBody()
-    {
-        $response = (new Response())
-            ->withStatus(200)
-            ->withAddedHeader('Content-Type', 'text/plain');
-        $response->getBody()->write('Content!');
-
-        $this->expectOutputString('Content!');
-
-        $this->emitter->emit($response);
-    }
-
-    public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown()
-    {
-        $stream = $this->prophesize(StreamInterface::class);
-        $stream->__toString()->willReturn('Content!');
-        $stream->getSize()->willReturn(null);
-
-        $response = (new Response())
-            ->withStatus(200)
-            ->withBody($stream->reveal());
-
-        ob_start();
-
-        $this->emitter->emit($response);
+        self::assertEquals('Content!', ob_get_contents());
 
         ob_end_clean();
 
-        foreach (HeaderStack::stack() as $header) {
-            $this->assertNotContains('Content-Length:', $header);
-        }
+        self::assertEquals('level4 ', ob_get_contents(), 'current buffer level string must remains after emit');
+
+        ob_end_clean();
+
+        $this->emitter->setMaxBufferLevel(2)->emit($response);
+
+        self::assertEquals('level2 level3 Content!', ob_get_contents(), 'must buffer until specified level');
+
+        ob_end_clean();
     }
 }

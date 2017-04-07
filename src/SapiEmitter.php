@@ -18,10 +18,14 @@ class SapiEmitter extends AbstractSapiEmitter
      * Set the maximum output buffering level.
      *
      * @param int $maxBufferLevel
+     *
+     * @return self
      */
-    public function setMaxBufferLevel(int $maxBufferLevel)
+    public function setMaxBufferLevel(int $maxBufferLevel): self
     {
         $this->maxBufferLevel = $maxBufferLevel;
+
+        return $this;
     }
 
     /**
