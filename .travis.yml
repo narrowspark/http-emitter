@@ -10,6 +10,10 @@ matrix:
       env: SETUP=basic SEND_COVERAGE=true PHPUNIT=true
     - php: 7.1
       env: SETUP=basic PHPSTAN=true
+    - php: nightly
+      env: SETUP=basic PHPUNIT=true
+  allow_failures:
+    - php: nightly
   fast_finish: true
 
 cache:
