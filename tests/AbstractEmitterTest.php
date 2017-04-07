@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Narrowspark\HttpEmitter\Tests;
 
-/**
+/*
  * Zend Framework (http://framework.zend.com/)
  *
  * @see       http://github.com/zendframework/zend-diactoros for the canonical source repository
@@ -10,10 +10,9 @@ namespace Narrowspark\HttpEmitter\Tests;
  * @license   https://github.com/zendframework/zend-diactoros/blob/master/LICENSE.md New BSD License
  */
 
-
-use PHPUnit\Framework\TestCase;
 use Narrowspark\HttpEmitter\SapiEmitter;
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
+use PHPUnit\Framework\TestCase;
 use Zend\Diactoros\Response;
 
 abstract class AbstractEmitterTest extends TestCase

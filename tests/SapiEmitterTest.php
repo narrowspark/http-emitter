@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Narrowspark\HttpEmitter\Tests;
 
-/**
+/*
  * Zend Framework (http://framework.zend.com/)
  *
  * @see       http://github.com/zendframework/zend-diactoros for the canonical source repository
@@ -17,11 +17,11 @@ class SapiEmitterTest extends AbstractEmitterTest
     public function testEmitsBufferLevel()
     {
         ob_start();
-        echo "level" . ob_get_level() . " "; // 2
+        echo 'level' . ob_get_level() . ' '; // 2
         ob_start();
-        echo "level" . ob_get_level() . " "; // 3
+        echo 'level' . ob_get_level() . ' '; // 3
         ob_start();
-        echo "level" . ob_get_level() . " "; // 4
+        echo 'level' . ob_get_level() . ' '; // 4
 
         $response = (new Response())
             ->withStatus(200)
