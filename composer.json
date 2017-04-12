@@ -21,34 +21,38 @@
         }
     ],
     "require": {
-        "php"                                   : "^7.1",
-        "psr/http-message"                      : "^1.0"
+        "php"                                                : "^7.1",
+        "psr/http-message"                                   : "^1.0",
+        "container-interop/service-provider"                 : "^0.3"
     },
     "require-dev": {
-        "phpunit/phpunit"                       : "^6.0",
-        "narrowspark/php-cs-fixer-config"       : "^2.2",
-        "phpstan/phpstan"                       : "^0.6",
-        "zendframework/zend-diactoros"          : "^1.3"
+        "phpunit/phpunit"                                    : "^6.0",
+        "narrowspark/php-cs-fixer-config"                    : "^2.2",
+        "mnapoli/simplex"                                    : "^0.2",
+        "phpstan/phpstan"                                    : "^0.6",
+        "zendframework/zend-diactoros"                       : "^1.3"
     },
     "autoload": {
         "psr-4": {
-            "Narrowspark\\HttpEmitter\\"        : "src/"
+            "Narrowspark\\HttpEmitter\\"                     : "src/"
         },
-        "exclude-from-classmap"                 : ["tests/"]
+        "exclude-from-classmap"                              : ["tests/"]
     },
     "autoload-dev": {
-        "files"                                 : ["tests/OverwritePhpFunctions.php"],
+        "files"                                              : ["tests/OverwritePhpFunctions.php"],
         "psr-4": {
-            "Narrowspark\\HttpEmitter\\Tests\\" : "tests/"
+            "Narrowspark\\HttpEmitter\\Tests\\"              : "tests/"
         }
     },
     "provide": {
-        "psr/http-message-implementation"       : "^1.0"
+        "psr/http-message-implementation"                    : "^1.0",
+        "container-interop/container-interop-implementation" : "^1.1",
+        "psr/container-implementation"                       : "^1.0"
     },
     "config": {
-        "sort-packages"                         : true,
-        "optimize-autoloader"                   : true
+        "sort-packages"                                      : true,
+        "optimize-autoloader"                                : true
     },
-    "license"                                   : "MIT",
-    "minimum-stability"                         : "dev"
+    "license"                                                : "MIT",
+    "minimum-stability"                                      : "dev"
 }
