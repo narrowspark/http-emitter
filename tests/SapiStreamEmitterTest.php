@@ -12,13 +12,13 @@ namespace Narrowspark\HttpEmitter\Tests;
 
 use Narrowspark\HttpEmitter\SapiStreamEmitter;
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
-use Psr\Http\Message\StreamInterface;
 use Prophecy\Argument;
+use Psr\Http\Message\StreamInterface;
 use Zend\Diactoros\CallbackStream;
 use Zend\Diactoros\Response;
 use Zend\Diactoros\Response\EmptyResponse;
-use Zend\Diactoros\Response\JsonResponse;
 use Zend\Diactoros\Response\HtmlResponse;
+use Zend\Diactoros\Response\JsonResponse;
 use Zend\Diactoros\Response\TextResponse;
 
 class SapiStreamEmitterTest extends AbstractEmitterTest
