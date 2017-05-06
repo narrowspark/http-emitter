@@ -10,10 +10,19 @@ namespace Narrowspark\HttpEmitter\Tests;
  * @license   https://github.com/zendframework/zend-diactoros/blob/master/LICENSE.md New BSD License
  */
 
+use Narrowspark\HttpEmitter\SapiEmitter;
+use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
+use Psr\Http\Message\StreamInterface;
 use Zend\Diactoros\Response;
 
 class SapiEmitterTest extends AbstractEmitterTest
 {
+    public function setUp()
+    {
+        HeaderStack::reset();
+        $this->emitter = new SapiEmitter();
+    }
+
     public function testEmitsBufferLevel()
     {
         ob_start();
@@ -45,5 +54,26 @@ class SapiEmitterTest extends AbstractEmitterTest
         self::assertEquals('level2 level3 Content!', ob_get_contents(), 'must buffer until specified level');
 
         ob_end_clean();
+    }
+
+    public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown()
+    {
+        $stream = $this->prophesize(StreamInterface::class);
+        $stream->__toString()->willReturn('Content!');
+        $stream->getSize()->willReturn(null);
+
+        $response = (new Response())
+            ->withStatus(200)
+            ->withBody($stream->reveal());
+
+        ob_start();
+
+        $this->emitter->emit($response);
+
+        ob_end_clean();
+
+        foreach (HeaderStack::stack() as $header) {
+            self::assertNotContains('Content-Length:', $header);
+        }
     }
 }

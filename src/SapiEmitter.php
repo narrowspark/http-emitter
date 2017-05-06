@@ -12,7 +12,7 @@ class SapiEmitter extends AbstractSapiEmitter
      *
      * @var int|null
      */
-    protected $maxBufferLevel;
+    private $maxBufferLevel;
 
     /**
      * Set the maximum output buffering level.
@@ -67,7 +67,7 @@ class SapiEmitter extends AbstractSapiEmitter
      *
      * @param \Psr\Http\Message\ResponseInterface $response
      */
-    protected function sendBody(ResponseInterface $response)
+    private function sendBody(ResponseInterface $response)
     {
         echo $response->getBody();
     }
