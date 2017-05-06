@@ -22,8 +22,6 @@ final class Util
      * @param bool $flush          Whether to flush or clean the buffers
      *
      * @return void
-     *
-     * @codeCoverageIgnore
      */
     public static function closeOutputBuffers(int $maxBufferLevel, bool $flush): void
     {
