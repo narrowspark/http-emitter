@@ -6,6 +6,7 @@
         "narrowspark",
         "http",
         "emitter",
+        "sapi",
         "psr-7"
     ],
     "support"    : {

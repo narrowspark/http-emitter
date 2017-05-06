@@ -10,7 +10,6 @@ namespace Narrowspark\HttpEmitter\Tests;
  * @license   https://github.com/zendframework/zend-diactoros/blob/master/LICENSE.md New BSD License
  */
 
-use Narrowspark\HttpEmitter\SapiEmitter;
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
 use PHPUnit\Framework\TestCase;
 use Zend\Diactoros\Response;
@@ -21,12 +20,6 @@ abstract class AbstractEmitterTest extends TestCase
      * @var SapiEmitter
      */
     protected $emitter;
-
-    public function setUp()
-    {
-        HeaderStack::reset();
-        $this->emitter = new SapiEmitter();
-    }
 
     public function tearDown()
     {
@@ -59,26 +52,5 @@ abstract class AbstractEmitterTest extends TestCase
         $this->expectOutputString('Content!');
 
         $this->emitter->emit($response);
-    }
-
-    public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown()
-    {
-        $stream = $this->prophesize('Psr\Http\Message\StreamInterface');
-        $stream->__toString()->willReturn('Content!');
-        $stream->getSize()->willReturn(null);
-
-        $response = (new Response())
-            ->withStatus(200)
-            ->withBody($stream->reveal());
-
-        ob_start();
-
-        $this->emitter->emit($response);
-
-        ob_end_clean();
-
-        foreach (HeaderStack::stack() as $header) {
-            self::assertNotContains('Content-Length:', $header);
-        }
     }
 }
