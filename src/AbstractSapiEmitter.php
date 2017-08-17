@@ -64,7 +64,7 @@ abstract class AbstractSapiEmitter implements EmitterInterface
     {
         foreach ($response->getHeaders() as $header => $values) {
             $name  = $this->toWordCase($header);
-            $first = true;
+            $first = $name === 'Set-Cookie' ? false : true;
 
             foreach ($values as $value) {
                 header(sprintf(
