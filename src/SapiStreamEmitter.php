@@ -15,6 +15,27 @@ class SapiStreamEmitter extends AbstractSapiEmitter
     private $maxBufferLength = 8192;
 
     /**
+     * Maximum output buffering level to unwrap.
+     *
+     * @var null|int
+     */
+    private $maxBufferLevel;
+
+    /**
+     * Set the maximum output buffering level.
+     *
+     * @param int $maxBufferLevel
+     *
+     * @return self
+     */
+    public function setMaxBufferLevel(int $maxBufferLevel): self
+    {
+        $this->maxBufferLevel = $maxBufferLevel;
+
+        return $this;
+    }
+
+    /**
      * Set the maximum output buffering level.
      *
      * @param int $maxBufferLength
@@ -31,7 +52,7 @@ class SapiStreamEmitter extends AbstractSapiEmitter
     /**
      * {@inheritdoc}
      */
-    public function emit(ResponseInterface $response)
+    public function emit(ResponseInterface $response): void
     {
         $file = $line = null;
 
@@ -49,10 +70,10 @@ class SapiStreamEmitter extends AbstractSapiEmitter
         $this->emitHeaders($response);
 
         // Command line output buffering is disabled in cli by default.
-        if (php_sapi_name() == 'cli' || php_sapi_name() == 'phpdbg') {
+        if (PHP_SAPI == 'cli' || PHP_SAPI == 'phpdbg') {
             $this->collectGarbage();
 
-            Util::closeOutputBuffers($this->maxBufferLength, true);
+            Util::closeOutputBuffers($this->maxBufferLevel ?? ob_get_level(), true);
         }
 
         $range = $this->parseContentRange($response->getHeaderLine('Content-Range'));
@@ -76,7 +97,7 @@ class SapiStreamEmitter extends AbstractSapiEmitter
      * @param \Psr\Http\Message\ResponseInterface $response
      * @param int                                 $maxBufferLength
      */
-    private function emitBody(ResponseInterface $response, int $maxBufferLength)
+    private function emitBody(ResponseInterface $response, int $maxBufferLength): void
     {
         $body = $response->getBody();
 
@@ -102,9 +123,9 @@ class SapiStreamEmitter extends AbstractSapiEmitter
      * @param \Psr\Http\Message\ResponseInterface $response
      * @param int                                 $maxBufferLength
      */
-    private function emitBodyRange(array $range, ResponseInterface $response, int $maxBufferLength)
+    private function emitBodyRange(array $range, ResponseInterface $response, int $maxBufferLength): void
     {
-        list($unit, $first, $last, $length) = $range;
+        [$unit, $first, $last, $length] = $range;
 
         $body = $response->getBody();
 
@@ -141,7 +162,7 @@ class SapiStreamEmitter extends AbstractSapiEmitter
      *
      * @param string $header
      *
-     * @return false|array [unit, first, last, length]; returns false if no
+     * @return array|false [unit, first, last, length]; returns false if no
      *                     content range or an invalid content range is provided
      */
     private function parseContentRange($header)

@@ -23,13 +23,13 @@ use Zend\Diactoros\Response\TextResponse;
 
 class SapiStreamEmitterTest extends AbstractEmitterTest
 {
-    public function setUp()
+    public function setUp(): void
     {
         HeaderStack::reset();
         $this->emitter = new SapiStreamEmitter();
     }
 
-    public function testEmitCallbackStreamResponse()
+    public function testEmitCallbackStreamResponse(): void
     {
         $stream = new CallbackStream(function () {
             return 'it works';
@@ -45,7 +45,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
         self::assertEquals('it works', ob_get_clean());
     }
 
-    public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown()
+    public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown(): void
     {
         $stream = $this->prophesize(StreamInterface::class);
         $stream->__toString()->willReturn('Content!');
@@ -106,7 +106,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
      *
      * @dataProvider emitStreamResponseProvider
      */
-    public function testEmitStreamResponse(bool $seekable, bool $readable, string $contents, int $maxBufferLength)
+    public function testEmitStreamResponse(bool $seekable, bool $readable, string $contents, int $maxBufferLength): void
     {
         $size               = mb_strlen($contents);
         $startPosition      = 0;
@@ -118,7 +118,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
             $contents,
             $size,
             $startPosition,
-            function ($bufferLength) use (&$peakBufferLength) {
+            function ($bufferLength) use (&$peakBufferLength): void {
                 if ($bufferLength > $peakBufferLength) {
                     $peakBufferLength = $bufferLength;
                 }
@@ -138,7 +138,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
         $emittedContents = ob_get_clean();
 
         if ($seekable) {
-            $rewindPredictionClosure = function () use (&$rewindCalled) {
+            $rewindPredictionClosure = function () use (&$rewindCalled): void {
                 $rewindCalled = true;
             };
 
@@ -156,7 +156,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
             $stream->eof()->shouldBeCalled();
             $stream->getContents()->shouldNotBeCalled();
         } else {
-            $fullContentsPredictionClosure = function () use (&$fullContentsCalled) {
+            $fullContentsPredictionClosure = function () use (&$fullContentsCalled): void {
                 $fullContentsCalled = true;
             };
 
@@ -242,9 +242,9 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
      *
      * @dataProvider emitRangeStreamResponseProvider
      */
-    public function testEmitRangeStreamResponse(bool $seekable, bool $readable, array $range, string $contents, int $maxBufferLength)
+    public function testEmitRangeStreamResponse(bool $seekable, bool $readable, array $range, string $contents, int $maxBufferLength): void
     {
-        list($unit, $first, $last, $length) = $range;
+        [$unit, $first, $last, $length]     = $range;
         $size                               = mb_strlen($contents);
 
         if ($readable && ! $seekable) {
@@ -260,7 +260,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
             $contents,
             $size,
             $startPosition,
-            function ($bufferLength) use (&$peakBufferLength) {
+            function ($bufferLength) use (&$peakBufferLength): void {
                 if ($bufferLength > $peakBufferLength) {
                     $peakBufferLength = $bufferLength;
                 }
@@ -282,7 +282,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
         $stream->rewind()->shouldNotBeCalled();
 
         if ($seekable) {
-            $seekPredictionClosure = function () use (&$seekCalled) {
+            $seekPredictionClosure = function () use (&$seekCalled): void {
                 $seekCalled = true;
             };
 
@@ -347,7 +347,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
      * @param int        $sizeBlocks       Number the blocks of stream data.
      *                                     Block size is equal to $maxBufferLength.
      * @param int        $maxAllowedBlocks maximum allowed memory usage in block units
-     * @param array|null $rangeBlocks      emitted range of data in block units [$firstBlock, $lastBlock]
+     * @param null|array $rangeBlocks      emitted range of data in block units [$firstBlock, $lastBlock]
      * @param int        $maxBufferLength  maximum buffer length used in the emitter call
      *
      * @dataProvider emitMemoryUsageProvider
@@ -359,7 +359,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
         int $maxAllowedBlocks,
         ?array $rangeBlocks,
         int $maxBufferLength
-    ) {
+    ): void {
         $sizeBytes             = $maxBufferLength * $sizeBlocks;
         $maxAllowedMemoryUsage = $maxBufferLength * $maxAllowedBlocks;
         $peakBufferLength      = 0;
@@ -376,7 +376,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
             }
         }
 
-        $closureTrackMemoryUsage = function () use (&$peakMemoryUsage) {
+        $closureTrackMemoryUsage = function () use (&$peakMemoryUsage): void {
             $peakMemoryUsage = max($peakMemoryUsage, memory_get_usage());
         };
 
@@ -390,7 +390,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
             },
             $sizeBytes,
             $position,
-            function ($bufferLength) use (&$peakBufferLength) {
+            function ($bufferLength) use (&$peakBufferLength): void {
                 if ($bufferLength > $peakBufferLength) {
                     $peakBufferLength = $bufferLength;
                 }
@@ -435,7 +435,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
         self::assertLessThanOrEqual($maxAllowedMemoryUsage, $peakMemoryUsage - $localMemoryUsage);
     }
 
-    public function testEmitEmptyResponse()
+    public function testEmitEmptyResponse(): void
     {
         $response = (new EmptyResponse())
             ->withStatus(204);
@@ -448,7 +448,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
         self::assertEmpty(ob_get_clean());
     }
 
-    public function testEmitHtmlResponse()
+    public function testEmitHtmlResponse(): void
     {
         $contents = '<!DOCTYPE html>'
                   . '<html>'
@@ -480,11 +480,11 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
     }
 
     /**
-     * @param string|array|null $contents Contents stored in stream
+     * @param null|array|string $contents Contents stored in stream
      *
      * @dataProvider emitJsonResponseProvider
      */
-    public function testEmitJsonResponse($contents)
+    public function testEmitJsonResponse($contents): void
     {
         $response = (new JsonResponse($contents))
             ->withStatus(200);
@@ -497,7 +497,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
         self::assertEquals(json_encode($contents), ob_get_clean());
     }
 
-    public function testEmitTextResponse()
+    public function testEmitTextResponse(): void
     {
         $contents = 'Hello world';
 
@@ -526,7 +526,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
      * @param mixed $body
      * @param mixed $expected
      */
-    public function testContentRange($header, $body, $expected)
+    public function testContentRange($header, $body, $expected): void
     {
         $response = (new Response())
             ->withHeader('Content-Range', $header);
@@ -538,7 +538,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
         self::assertEquals($expected, ob_get_clean());
     }
 
-    public function testContentRangeUnseekableBody()
+    public function testContentRangeUnseekableBody(): void
     {
         $body = new CallbackStream(function () {
             return 'Hello world';
@@ -555,10 +555,10 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
     /**
      * Create a new stream prophecy and setup common promises.
      *
-     * @param string|callable $contents              stream contents
+     * @param callable|string $contents              stream contents
      * @param int             $size                  size of stream contents
      * @param int             $startPosition         start position of internal stream data pointer
-     * @param callable|null   $trackPeakBufferLength Called on "read" calls.
+     * @param null|callable   $trackPeakBufferLength Called on "read" calls.
      *                                               Receives data length (i.e. data length <= buffer length).
      *
      * @return ObjectProphecy returns new stream prophecy

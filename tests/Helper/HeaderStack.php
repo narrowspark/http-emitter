@@ -24,7 +24,7 @@ class HeaderStack
      *
      * @param string $header
      */
-    public static function push(string $header)
+    public static function push(string $header): void
     {
         self::$data[] = $header;
     }

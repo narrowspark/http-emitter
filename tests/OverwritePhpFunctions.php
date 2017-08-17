@@ -7,8 +7,8 @@ use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
 /**
  * Have headers been sent?
  *
- * @param string|null $file
- * @param int|null    $line
+ * @param null|string $file
+ * @param null|int    $line
  *
  * @return false
  */
@@ -22,7 +22,7 @@ function headers_sent($file, $line): bool
  *
  * @param string $value
  */
-function header($value)
+function header($value): void
 {
     HeaderStack::push($value);
 }

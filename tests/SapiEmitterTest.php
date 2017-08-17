@@ -17,13 +17,13 @@ use Zend\Diactoros\Response;
 
 class SapiEmitterTest extends AbstractEmitterTest
 {
-    public function setUp()
+    public function setUp(): void
     {
         HeaderStack::reset();
         $this->emitter = new SapiEmitter();
     }
 
-    public function testEmitsBufferLevel()
+    public function testEmitsBufferLevel(): void
     {
         ob_start();
         echo 'level' . ob_get_level() . ' '; // 2
@@ -56,7 +56,7 @@ class SapiEmitterTest extends AbstractEmitterTest
         ob_end_clean();
     }
 
-    public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown()
+    public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown(): void
     {
         $stream = $this->prophesize(StreamInterface::class);
         $stream->__toString()->willReturn('Content!');

@@ -10,7 +10,7 @@ class SapiEmitter extends AbstractSapiEmitter
     /**
      * Maximum output buffering level to unwrap.
      *
-     * @var int|null
+     * @var null|int
      */
     private $maxBufferLevel;
 
@@ -31,7 +31,7 @@ class SapiEmitter extends AbstractSapiEmitter
     /**
      * {@inheritdoc}
      */
-    public function emit(ResponseInterface $response)
+    public function emit(ResponseInterface $response): void
     {
         $file = $line = null;
 
@@ -49,7 +49,7 @@ class SapiEmitter extends AbstractSapiEmitter
         $this->emitHeaders($response);
 
         // Command line output buffering is disabled in cli by default.
-        if (php_sapi_name() == 'cli' || php_sapi_name() == 'phpdbg') {
+        if (PHP_SAPI == 'cli' || PHP_SAPI == 'phpdbg') {
             $this->collectGarbage();
 
             Util::closeOutputBuffers($this->maxBufferLevel ?? ob_get_level(), true);
@@ -67,7 +67,7 @@ class SapiEmitter extends AbstractSapiEmitter
      *
      * @param \Psr\Http\Message\ResponseInterface $response
      */
-    private function sendBody(ResponseInterface $response)
+    private function sendBody(ResponseInterface $response): void
     {
         echo $response->getBody();
     }

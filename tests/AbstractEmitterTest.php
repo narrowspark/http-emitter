@@ -21,12 +21,12 @@ abstract class AbstractEmitterTest extends TestCase
      */
     protected $emitter;
 
-    public function tearDown()
+    public function tearDown(): void
     {
         HeaderStack::reset();
     }
 
-    public function testEmitsResponseHeaders()
+    public function testEmitsResponseHeaders(): void
     {
         $response = (new Response())
             ->withStatus(200)
@@ -42,7 +42,7 @@ abstract class AbstractEmitterTest extends TestCase
         self::assertContains('Content-Length: 8', HeaderStack::stack());
     }
 
-    public function testEmitsMessageBody()
+    public function testEmitsMessageBody(): void
     {
         $response = (new Response())
             ->withStatus(200)

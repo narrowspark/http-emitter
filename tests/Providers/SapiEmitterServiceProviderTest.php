@@ -10,7 +10,7 @@ use Simplex\Container;
 
 class SapiEmitterServiceProviderTest extends TestCase
 {
-    public function testGetServices()
+    public function testGetServices(): void
     {
         $container = new Container();
 
