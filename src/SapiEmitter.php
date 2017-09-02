@@ -19,12 +19,13 @@ class SapiEmitter extends AbstractSapiEmitter
         Util::closeOutputBuffers($this->maxBufferLevel ?? \ob_get_level(), true);
 
         $this->sendBody($response);
-
+        // @codeCoverageIgnoreStart
         if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
         } elseif ('cli' !== PHP_SAPI) {
             Util::closeOutputBuffers(0, true);
         }
+        // @codeCoverageIgnoreEnd
     }
 
     /**

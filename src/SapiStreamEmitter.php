@@ -27,12 +27,13 @@ class SapiStreamEmitter extends AbstractSapiEmitter
         }
 
         $this->sendBody($response, $this->maxBufferLength);
-
-        if (function_exists('\fastcgi_finish_request')) {
-            \fastcgi_finish_request();
+        // @codeCoverageIgnoreStart
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
         } elseif ('cli' !== PHP_SAPI) {
             Util::closeOutputBuffers(0, true);
         }
+        // @codeCoverageIgnoreEnd
     }
 
     /**
