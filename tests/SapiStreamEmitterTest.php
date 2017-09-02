@@ -26,6 +26,7 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
     public function setUp(): void
     {
         HeaderStack::reset();
+
         $this->emitter = new SapiStreamEmitter();
     }
 

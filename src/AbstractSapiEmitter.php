@@ -3,27 +3,70 @@ declare(strict_types=1);
 namespace Narrowspark\HttpEmitter;
 
 use Psr\Http\Message\ResponseInterface;
+use RuntimeException;
 
 abstract class AbstractSapiEmitter implements EmitterInterface
 {
     /**
-     * Inject the Content-Length header if is not already present.
+     * Maximum output buffering size for each iteration.
      *
-     * @param \Psr\Http\Message\ResponseInterface $response
-     *
-     * @return \Psr\Http\Message\ResponseInterface
+     * @var int
      */
-    protected function injectContentLength(ResponseInterface $response): ResponseInterface
-    {
-        if (! $response->hasHeader('Content-Length')) {
-            // PSR-7 indicates int OR null for the stream size; for null values,
-            // we will not auto-inject the Content-Length.
-            if (null !== $response->getBody()->getSize()) {
-                return $response->withHeader('Content-Length', (string) $response->getBody()->getSize());
-            }
-        }
+    protected $maxBufferLength = 8192;
 
-        return $response;
+    /**
+     * Maximum output buffering level to unwrap.
+     *
+     * @var null|int
+     */
+    protected $maxBufferLevel;
+
+    /**
+     * Set the maximum output buffering level.
+     *
+     * @param int $maxBufferLevel
+     *
+     * @return \Narrowspark\HttpEmitter\EmitterInterface
+     */
+    public function setMaxBufferLevel(int $maxBufferLevel): EmitterInterface
+    {
+        $this->maxBufferLevel = $maxBufferLevel;
+
+        return $this;
+    }
+
+    /**
+     * Set the maximum output buffering level.
+     *
+     * @param int $maxBufferLength
+     *
+     * @return \Narrowspark\HttpEmitter\EmitterInterface
+     */
+    public function setMaxBufferLength(int $maxBufferLength): EmitterInterface
+    {
+        $this->maxBufferLength = $maxBufferLength;
+
+        return $this;
+    }
+
+    /**
+     * Assert that headers haven't already been sent.
+     *
+     * @throws \RuntimeException
+     *
+     * @return void
+     */
+    protected function assertHeadersNotSent(): void
+    {
+        $file = $line = null;
+
+        if (headers_sent($file, $line)) {
+            throw new RuntimeException(\sprintf(
+                'Unable to emit response: Headers already sent in file %s on line %s.',
+                $file,
+                $line
+            ));
+        }
     }
 
     /**
@@ -38,12 +81,12 @@ abstract class AbstractSapiEmitter implements EmitterInterface
      */
     protected function emitStatusLine(ResponseInterface $response): void
     {
-        header(vsprintf(
+        header(\vsprintf(
             'HTTP/%s %d%s',
             [
                 $response->getProtocolVersion(),
                 $response->getStatusCode(),
-                rtrim(' ' . $response->getReasonPhrase()),
+                \rtrim(' ' . $response->getReasonPhrase()),
             ]
         ));
     }
@@ -67,7 +110,7 @@ abstract class AbstractSapiEmitter implements EmitterInterface
             $first = $name === 'Set-Cookie' ? false : true;
 
             foreach ($values as $value) {
-                header(sprintf(
+                header(\sprintf(
                     '%s: %s',
                     $name,
                     $value
@@ -75,23 +118,6 @@ abstract class AbstractSapiEmitter implements EmitterInterface
 
                 $first = false;
             }
-        }
-    }
-
-    /**
-     * Perform garbage collection.
-     *
-     * @return void
-     */
-    protected function collectGarbage(): void
-    {
-        // try to enable garbage collection
-        if (! gc_enabled()) {
-            @gc_enable();
-        }
-        // collect garbage only if garbage; collection is enabled
-        if (gc_enabled()) {
-            gc_collect_cycles();
         }
     }
 
@@ -104,9 +130,9 @@ abstract class AbstractSapiEmitter implements EmitterInterface
      */
     protected function toWordCase(string $header): string
     {
-        $filtered = str_replace('-', ' ', $header);
-        $filtered = ucwords($filtered);
+        $filtered = \str_replace('-', ' ', $header);
+        $filtered = \ucwords($filtered);
 
-        return str_replace(' ', '-', $filtered);
+        return \str_replace(' ', '-', $filtered);
     }
 }

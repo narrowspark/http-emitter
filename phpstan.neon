@@ -1,4 +1,3 @@
 parameters:
     ignoreErrors:
         - '#Function Narrowspark\\HttpEmitter\\header invoked with 2 parameters#'
-        - '#Function fastcgi_finish_request not found#'

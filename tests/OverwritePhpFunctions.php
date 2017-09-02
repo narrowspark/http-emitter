@@ -10,7 +10,7 @@ use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
  * @param null|string $file
  * @param null|int    $line
  *
- * @return false
+ * @return bool false
  */
 function headers_sent($file, $line): bool
 {
@@ -21,6 +21,8 @@ function headers_sent($file, $line): bool
  * Emit a header, without creating actual output artifacts.
  *
  * @param string $value
+ *
+ * @return void
  */
 function header($value): void
 {

@@ -3,67 +3,32 @@ declare(strict_types=1);
 namespace Narrowspark\HttpEmitter;
 
 use Psr\Http\Message\ResponseInterface;
-use RuntimeException;
 
 class SapiEmitter extends AbstractSapiEmitter
 {
-    /**
-     * Maximum output buffering level to unwrap.
-     *
-     * @var null|int
-     */
-    private $maxBufferLevel;
-
-    /**
-     * Set the maximum output buffering level.
-     *
-     * @param int $maxBufferLevel
-     *
-     * @return self
-     */
-    public function setMaxBufferLevel(int $maxBufferLevel): self
-    {
-        $this->maxBufferLevel = $maxBufferLevel;
-
-        return $this;
-    }
-
     /**
      * {@inheritdoc}
      */
     public function emit(ResponseInterface $response): void
     {
-        $file = $line = null;
-
-        if (headers_sent($file, $line)) {
-            throw new RuntimeException(sprintf(
-                'Unable to emit response: Headers already sent in file %s on line %s.',
-                $file,
-                $line
-            ));
-        }
-
-        $response = $this->injectContentLength($response);
+        $this->assertHeadersNotSent();
 
         $this->emitStatusLine($response);
         $this->emitHeaders($response);
 
-        // Command line output buffering is disabled in cli by default.
-        if (PHP_SAPI == 'cli' || PHP_SAPI == 'phpdbg') {
-            $this->collectGarbage();
-
-            Util::closeOutputBuffers($this->maxBufferLevel ?? ob_get_level(), true);
-        }
+        Util::closeOutputBuffers($this->maxBufferLevel ?? \ob_get_level(), true);
 
         $this->sendBody($response);
 
         if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
+        } elseif ('cli' !== PHP_SAPI) {
+            Util::closeOutputBuffers(0, true);
         }
     }
 
     /**
-     * Sends the body of the response.
+     * Sends the message body of the response.
      *
      * @param \Psr\Http\Message\ResponseInterface $response
      */

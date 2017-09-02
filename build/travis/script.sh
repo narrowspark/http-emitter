@@ -7,7 +7,7 @@ mkdir -p build/logs
 set +e
 bash -e <<TRY
     if [[ "$PHPSTAN" = true ]]; then
-        ./vendor/bin/phpstan analyse -c phpstan.neon -l 5 src
+        ./vendor/bin/phpstan analyse -c phpstan.neon -l 6 src/
     fi
 
     if [[ "$CS" = true ]]; then

@@ -3,78 +3,20 @@ declare(strict_types=1);
 namespace Narrowspark\HttpEmitter;
 
 use Psr\Http\Message\ResponseInterface;
-use RuntimeException;
 
 class SapiStreamEmitter extends AbstractSapiEmitter
 {
-    /**
-     * Maximum output buffering size for each iteration.
-     *
-     * @var int
-     */
-    private $maxBufferLength = 8192;
-
-    /**
-     * Maximum output buffering level to unwrap.
-     *
-     * @var null|int
-     */
-    private $maxBufferLevel;
-
-    /**
-     * Set the maximum output buffering level.
-     *
-     * @param int $maxBufferLevel
-     *
-     * @return self
-     */
-    public function setMaxBufferLevel(int $maxBufferLevel): self
-    {
-        $this->maxBufferLevel = $maxBufferLevel;
-
-        return $this;
-    }
-
-    /**
-     * Set the maximum output buffering level.
-     *
-     * @param int $maxBufferLength
-     *
-     * @return self
-     */
-    public function setMaxBufferLength(int $maxBufferLength): self
-    {
-        $this->maxBufferLength = $maxBufferLength;
-
-        return $this;
-    }
-
     /**
      * {@inheritdoc}
      */
     public function emit(ResponseInterface $response): void
     {
-        $file = $line = null;
-
-        if (headers_sent($file, $line)) {
-            throw new RuntimeException(sprintf(
-                'Unable to emit response: Headers already sent in file %s on line %s.',
-                $file,
-                $line
-            ));
-        }
-
-        $response = $this->injectContentLength($response);
+        $this->assertHeadersNotSent();
 
         $this->emitStatusLine($response);
         $this->emitHeaders($response);
 
-        // Command line output buffering is disabled in cli by default.
-        if (PHP_SAPI == 'cli' || PHP_SAPI == 'phpdbg') {
-            $this->collectGarbage();
-
-            Util::closeOutputBuffers($this->maxBufferLevel ?? ob_get_level(), true);
-        }
+        Util::closeOutputBuffers($this->maxBufferLevel ?? \ob_get_level(), true);
 
         $range = $this->parseContentRange($response->getHeaderLine('Content-Range'));
 
@@ -84,20 +26,22 @@ class SapiStreamEmitter extends AbstractSapiEmitter
             return;
         }
 
-        $this->emitBody($response, $this->maxBufferLength);
+        $this->sendBody($response, $this->maxBufferLength);
 
-        if (function_exists('fastcgi_finish_request')) {
-            fastcgi_finish_request();
+        if (function_exists('\fastcgi_finish_request')) {
+            \fastcgi_finish_request();
+        } elseif ('cli' !== PHP_SAPI) {
+            Util::closeOutputBuffers(0, true);
         }
     }
 
     /**
-     * Emit the message body.
+     * Sends the message body of the response.
      *
      * @param \Psr\Http\Message\ResponseInterface $response
      * @param int                                 $maxBufferLength
      */
-    private function emitBody(ResponseInterface $response, int $maxBufferLength): void
+    private function sendBody(ResponseInterface $response, int $maxBufferLength): void
     {
         $body = $response->getBody();
 
@@ -137,7 +81,7 @@ class SapiStreamEmitter extends AbstractSapiEmitter
         }
 
         if (! $body->isReadable()) {
-            echo mb_substr($body->getContents(), $first, $length);
+            echo \mb_substr($body->getContents(), $first, $length);
 
             return;
         }
@@ -146,7 +90,7 @@ class SapiStreamEmitter extends AbstractSapiEmitter
 
         while ($remaining >= $maxBufferLength && ! $body->eof()) {
             $contents   = $body->read($maxBufferLength);
-            $remaining -= mb_strlen($contents);
+            $remaining -= \mb_strlen($contents);
 
             echo $contents;
         }
@@ -167,7 +111,7 @@ class SapiStreamEmitter extends AbstractSapiEmitter
      */
     private function parseContentRange($header)
     {
-        if (preg_match('/(?P<unit>[\w]+)\s+(?P<first>\d+)-(?P<last>\d+)\/(?P<length>\d+|\*)/', $header, $matches)) {
+        if (\preg_match('/(?P<unit>[\w]+)\s+(?P<first>\d+)-(?P<last>\d+)\/(?P<length>\d+|\*)/', $header, $matches)) {
             return [
                 $matches['unit'],
                 (int) $matches['first'],
