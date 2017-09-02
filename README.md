@@ -8,6 +8,9 @@
     <a href="http://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square"></a>
 </p>
 
+A single implementation is currently available, ```Narrowspark\HttpEmitter\SapiEmitter```, which will use the native PHP functions ```header()``` and ```echo``` in order to emit the response.
+If you are using a non-SAPI implementation, you will need to create your own ```Narrowspark\HttpEmitter\EmitterInterface``` implementation.
+
 Installation
 ------------
 
@@ -23,9 +26,22 @@ Use
 
 use Narrowspark\HttpEmitter\SapiEmitter;
 
-$emitter = new SapiEmitter()
-$emitter->emit(new Response());
+$response = new \Response();
+$response->getBody()->write("some content\n");
+
+$emitter = new SapiEmitter();
+$emitter->emit($response);
 ```
+
+If you missing the ```Content-Length``` header you need to use 
+
+```php
+<?php
+
+$response = new \Response();
+
+$response = Util::injectContentLength($response);
+``` 
 
 Contributing
 ------------
@@ -33,7 +49,6 @@ Contributing
 If you would like to help take a look at the [list of issues](http://github.com/narrowspark/http-emitter/issues) and check our [Contributing](CONTRIBUTING.md) guild.
 
 > **Note:** Please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
-
 
 License
 ---------------
