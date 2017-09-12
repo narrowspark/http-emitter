@@ -57,7 +57,7 @@ class UtilTest extends TestCase
         }
     }
 
-    public function testCloseOutputBuffersWithFlush()
+    public function testCloseOutputBuffersWithFlush(): void
     {
         $response = (new Response())
             ->withStatus(200)
@@ -74,7 +74,7 @@ class UtilTest extends TestCase
         self::assertSame(1, ob_get_level());
     }
 
-    public function testCloseOutputBuffersWithClean()
+    public function testCloseOutputBuffersWithClean(): void
     {
         $response = (new Response())
             ->withStatus(200)
