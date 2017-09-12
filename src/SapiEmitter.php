@@ -11,21 +11,12 @@ class SapiEmitter extends AbstractSapiEmitter
      */
     public function emit(ResponseInterface $response): void
     {
-        $this->assertHeadersNotSent();
+        $this->assertNoPreviousOutput();
 
         $this->emitStatusLine($response);
         $this->emitHeaders($response);
 
-        Util::closeOutputBuffers($this->maxBufferLevel ?? \ob_get_level(), true);
-
         $this->sendBody($response);
-        // @codeCoverageIgnoreStart
-        if (function_exists('fastcgi_finish_request')) {
-            fastcgi_finish_request();
-        } elseif ('cli' !== PHP_SAPI) {
-            Util::closeOutputBuffers(0, true);
-        }
-        // @codeCoverageIgnoreEnd
     }
 
     /**

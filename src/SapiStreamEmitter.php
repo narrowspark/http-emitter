@@ -7,16 +7,35 @@ use Psr\Http\Message\ResponseInterface;
 class SapiStreamEmitter extends AbstractSapiEmitter
 {
     /**
+     * Maximum output buffering size for each iteration.
+     *
+     * @var int
+     */
+    protected $maxBufferLength = 8192;
+
+    /**
+     * Set the maximum output buffering level.
+     *
+     * @param int $maxBufferLength
+     *
+     * @return \Narrowspark\HttpEmitter\EmitterInterface
+     */
+    public function setMaxBufferLength(int $maxBufferLength): EmitterInterface
+    {
+        $this->maxBufferLength = $maxBufferLength;
+
+        return $this;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function emit(ResponseInterface $response): void
     {
-        $this->assertHeadersNotSent();
+        $this->assertNoPreviousOutput();
 
         $this->emitStatusLine($response);
         $this->emitHeaders($response);
-
-        Util::closeOutputBuffers($this->maxBufferLevel ?? \ob_get_level(), true);
 
         $range = $this->parseContentRange($response->getHeaderLine('Content-Range'));
 
@@ -27,13 +46,6 @@ class SapiStreamEmitter extends AbstractSapiEmitter
         }
 
         $this->sendBody($response, $this->maxBufferLength);
-        // @codeCoverageIgnoreStart
-        if (function_exists('fastcgi_finish_request')) {
-            fastcgi_finish_request();
-        } elseif ('cli' !== PHP_SAPI) {
-            Util::closeOutputBuffers(0, true);
-        }
-        // @codeCoverageIgnoreEnd
     }
 
     /**

@@ -8,55 +8,13 @@ use RuntimeException;
 abstract class AbstractSapiEmitter implements EmitterInterface
 {
     /**
-     * Maximum output buffering size for each iteration.
-     *
-     * @var int
-     */
-    protected $maxBufferLength = 8192;
-
-    /**
-     * Maximum output buffering level to unwrap.
-     *
-     * @var null|int
-     */
-    protected $maxBufferLevel;
-
-    /**
-     * Set the maximum output buffering level.
-     *
-     * @param int $maxBufferLevel
-     *
-     * @return \Narrowspark\HttpEmitter\EmitterInterface
-     */
-    public function setMaxBufferLevel(int $maxBufferLevel): EmitterInterface
-    {
-        $this->maxBufferLevel = $maxBufferLevel;
-
-        return $this;
-    }
-
-    /**
-     * Set the maximum output buffering level.
-     *
-     * @param int $maxBufferLength
-     *
-     * @return \Narrowspark\HttpEmitter\EmitterInterface
-     */
-    public function setMaxBufferLength(int $maxBufferLength): EmitterInterface
-    {
-        $this->maxBufferLength = $maxBufferLength;
-
-        return $this;
-    }
-
-    /**
-     * Assert that headers haven't already been sent.
+     * Assert either that no headers been sent or the output buffer contains no content.
      *
      * @throws \RuntimeException
      *
      * @return void
      */
-    protected function assertHeadersNotSent(): void
+    protected function assertNoPreviousOutput(): void
     {
         $file = $line = null;
 
@@ -66,6 +24,10 @@ abstract class AbstractSapiEmitter implements EmitterInterface
                 $file,
                 $line
             ));
+        }
+
+        if (ob_get_level() > 0 && ob_get_length() > 0) {
+            throw new RuntimeException('Output has been emitted previously; cannot emit response.');
         }
     }
 

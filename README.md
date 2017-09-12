@@ -8,8 +8,15 @@
     <a href="http://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square"></a>
 </p>
 
-A single implementation is currently available, ```Narrowspark\HttpEmitter\SapiEmitter```, which will use the native PHP functions ```header()``` and ```echo``` in order to emit the response.
+Two implementations currently available: ```Narrowspark\HttpEmitter\SapiEmitter``` and ```Narrowspark\HttpEmitter\SapiStreamEmitter```.
+Each use the native PHP functions ```header()``` and ```echo``` in order to emit the response.
+
 If you are using a non-SAPI implementation, you will need to create your own ```Narrowspark\HttpEmitter\EmitterInterface``` implementation.
+
+> Note: If headers have been sent, or the output buffer exists and has a non-zero length, the emitters raise an exception, as mixed PSR-7 / output buffer content creates a blocking issue.
+>
+> If you are emitting content via `echo`, `print`, `var_dump`, etc., or not catching PHP errors / exceptions, you will need to either fix your application to always work with a PSR-7 response.
+> Or provide your own emitters that allow mixed output mechanisms.
 
 Installation
 ------------
