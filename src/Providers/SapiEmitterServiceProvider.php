@@ -3,16 +3,16 @@ declare(strict_types=1);
 namespace Narrowspark\HttpEmitter\Providers;
 
 use Interop\Container\ContainerInterface;
-use Interop\Container\ServiceProvider;
+use Interop\Container\ServiceProviderInterface;
 use Narrowspark\HttpEmitter\EmitterInterface;
 use Narrowspark\HttpEmitter\SapiEmitter;
 
-class SapiEmitterServiceProvider implements ServiceProvider
+class SapiEmitterServiceProvider implements ServiceProviderInterface
 {
     /**
      * {@inheritdoc}
      */
-    public function getServices()
+    public function getFactories()
     {
         return [
             EmitterInterface::class => function () {
@@ -22,5 +22,13 @@ class SapiEmitterServiceProvider implements ServiceProvider
                 return $container->get(EmitterInterface::class);
             },
         ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getExtensions(): array
+    {
+        return [];
     }
 }
