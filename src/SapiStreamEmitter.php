@@ -34,8 +34,10 @@ class SapiStreamEmitter extends AbstractSapiEmitter
     {
         $this->assertNoPreviousOutput();
 
-        $this->emitStatusLine($response);
         $this->emitHeaders($response);
+
+        // Set the status _after_ the headers, because of PHP's "helpful" behavior with location headers.
+        $this->emitStatusLine($response);
 
         $range = $this->parseContentRange($response->getHeaderLine('Content-Range'));
 

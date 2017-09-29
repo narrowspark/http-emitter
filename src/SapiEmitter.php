@@ -13,8 +13,10 @@ class SapiEmitter extends AbstractSapiEmitter
     {
         $this->assertNoPreviousOutput();
 
-        $this->emitStatusLine($response);
         $this->emitHeaders($response);
+
+        // Set the status _after_ the headers, because of PHP's "helpful" behavior with location headers.
+        $this->emitStatusLine($response);
 
         $this->sendBody($response);
     }
