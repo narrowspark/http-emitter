@@ -38,7 +38,6 @@ abstract class AbstractEmitterTest extends TestCase
         $this->emitter->emit($response);
     }
 
-
     public function testEmitsResponseHeaders()
     {
         $response = (new Response())
