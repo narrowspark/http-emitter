@@ -5,7 +5,7 @@ namespace Narrowspark\HttpEmitter\Tests\Helper;
 class HeaderStack
 {
     /**
-     * @var array
+     * @var string[][]
      */
     private static $data = [];
 
@@ -22,9 +22,9 @@ class HeaderStack
     /**
      * Push a header on the stack.
      *
-     * @param string $header
+     * @param string[] $header
      */
-    public static function push(string $header): void
+    public static function push(array $header): void
     {
         self::$data[] = $header;
     }
@@ -32,10 +32,28 @@ class HeaderStack
     /**
      * Return the current header stack.
      *
-     * @return array
+     * @return string[][]
      */
     public static function stack(): array
     {
         return self::$data;
+    }
+
+    /**
+     * Verify if there's a header line on the stack.
+     *
+     * @param string $header
+     *
+     * @return bool
+     */
+    public static function has($header)
+    {
+        foreach (self::$data as $item) {
+            if ($item['header'] === $header) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
