@@ -31,9 +31,9 @@ class UtilTest extends TestCase
         $this->emitter->emit($response);
         ob_end_clean();
 
-        self::assertContains('HTTP/1.1 200 OK', HeaderStack::stack());
-        self::assertContains('Content-Type: text/plain', HeaderStack::stack());
-        self::assertContains('Content-Length: 8', HeaderStack::stack());
+        self::assertTrue(HeaderStack::has('HTTP/1.1 200 OK'));
+        self::assertTrue(HeaderStack::has('Content-Type: text/plain'));
+        self::assertTrue(HeaderStack::has('Content-Length: 8'));
     }
 
     public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown(): void
@@ -53,7 +53,8 @@ class UtilTest extends TestCase
         ob_end_clean();
 
         foreach (HeaderStack::stack() as $header) {
-            self::assertNotContains('Content-Length:', $header);
+            var_dump($header);
+            self::assertNotContains('Content-Length:', $header['header']);
         }
     }
 

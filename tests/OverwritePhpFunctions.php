@@ -20,11 +20,19 @@ function headers_sent($file, $line): bool
 /**
  * Emit a header, without creating actual output artifacts.
  *
- * @param string $value
+ * @param string   $string
+ * @param bool     $replace
+ * @param int|null $statusCode
  *
  * @return void
  */
-function header($value): void
+function header($string, $replace = true, $statusCode = null): void
 {
-    HeaderStack::push($value);
+    HeaderStack::push(
+        [
+            'header'      => $string,
+            'replace'     => $replace,
+            'status_code' => $statusCode,
+        ]
+    );
 }

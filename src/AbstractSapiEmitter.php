@@ -37,20 +37,30 @@ abstract class AbstractSapiEmitter implements EmitterInterface
      * Emits the status line using the protocol version and status code from
      * the response; if a reason phrase is availble, it, too, is emitted.
      *
+     * It's important to mention that, in order to prevent PHP from changing
+     * the status code of the emitted response, this method should be called
+     * after `sendBody()`
+     *
      * @param \Psr\Http\Message\ResponseInterface $response
      *
      * @return void
      */
     protected function emitStatusLine(ResponseInterface $response): void
     {
-        header(\vsprintf(
-            'HTTP/%s %d%s',
-            [
-                $response->getProtocolVersion(),
-                $response->getStatusCode(),
-                \rtrim(' ' . $response->getReasonPhrase()),
-            ]
-        ));
+        $statusCode = $response->getStatusCode();
+
+        header(
+            \vsprintf(
+                'HTTP/%s %d%s',
+                [
+                    $response->getProtocolVersion(),
+                    $statusCode,
+                    \rtrim(' ' . $response->getReasonPhrase()),
+                ]
+            ),
+            true,
+            $statusCode
+        );
     }
 
     /**
@@ -67,16 +77,22 @@ abstract class AbstractSapiEmitter implements EmitterInterface
      */
     protected function emitHeaders(ResponseInterface $response): void
     {
+        $statusCode = $response->getStatusCode();
+
         foreach ($response->getHeaders() as $header => $values) {
             $name  = $this->toWordCase($header);
             $first = $name === 'Set-Cookie' ? false : true;
 
             foreach ($values as $value) {
-                header(\sprintf(
+                header(
+                    \sprintf(
                     '%s: %s',
                     $name,
                     $value
-                ), $first);
+                    ),
+                    $first,
+                    $statusCode
+                );
 
                 $first = false;
             }
