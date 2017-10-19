@@ -7,11 +7,9 @@ matrix:
     - php: 7.1
       env: SETUP=basic CS=true
     - php: 7.1
-      env: SETUP=basic SEND_COVERAGE=true PHPUNIT=true
-    - php: 7.1
       env: SETUP=basic PHPSTAN=true
-#    - php: 7.2
-#      env: SETUP=basic PHPUNIT=true
+    - php: 7.2
+      env: SETUP=basic SEND_COVERAGE=true PHPUNIT=true
   fast_finish: true
 
 cache:

@@ -12,6 +12,7 @@ namespace Narrowspark\HttpEmitter\Tests;
 
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\StreamInterface;
 use Zend\Diactoros\Response;
 
 abstract class AbstractEmitterTest extends TestCase
@@ -89,9 +90,25 @@ abstract class AbstractEmitterTest extends TestCase
         self::assertSame($expectedStack, HeaderStack::stack());
     }
 
+    public function testEmitterRespectLocationHeader(): void
+    {
+        $response = (new Response())
+            ->withStatus(200)
+            ->withAddedHeader('Location', 'http://api.my-service.com/12345678');
+
+        $this->emitter->emit($response);
+
+        $expectedStack = [
+            ['header' => 'Location: http://api.my-service.com/12345678', 'replace' => true, 'status_code' => 200],
+            ['header' => 'HTTP/1.1 200 OK', 'replace' => true, 'status_code' => 200],
+        ];
+
+        self::assertSame($expectedStack, HeaderStack::stack());
+    }
+
     public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown(): void
     {
-        $stream = $this->prophesize('Psr\Http\Message\StreamInterface');
+        $stream = $this->prophesize(StreamInterface::class);
         $stream->__toString()->willReturn('Content!');
         $stream->getSize()->willReturn(null);
         $response = (new Response())
