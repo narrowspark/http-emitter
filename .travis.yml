@@ -26,25 +26,25 @@ jobs:
   include:
     - stage: Test
       php: 7.1
-      env: REMOVE_XDEBUG=true
+      env: REMOVE_XDEBUG=true INSTALL_SWOOLE=true
     - stage: Test
       php: 7.2
-      env: REMOVE_XDEBUG=true
+      env: REMOVE_XDEBUG=true INSTALL_SWOOLE=true
 
     - stage: Coding standard
       php: 7.2
-      env: REMOVE_XDEBUG=true
+      env: REMOVE_XDEBUG=true INSTALL_SWOOLE=true
       script:
         - ./vendor/bin/php-cs-fixer fix --verbose --diff --dry-run
     - stage: Coding standard
       php: 7.2
-      env: REMOVE_XDEBUG=false
+      env: REMOVE_XDEBUG=false INSTALL_SWOOLE=false
       script:
         - ./vendor/bin/phpstan analyse -c phpstan.neon -l 7 src
 
     - stage: Coverage
       php: 7.2
-      env: REMOVE_XDEBUG=false
+      env: REMOVE_XDEBUG=false INSTALL_SWOOLE=true
       script:
         - bash -xc "$TEST -c ./phpunit.xml.dist --coverage-clover=coverage.xml"
       after_success:

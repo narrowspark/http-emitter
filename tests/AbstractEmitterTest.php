@@ -25,6 +25,9 @@ abstract class AbstractEmitterTest extends TestCase
      */
     protected $emitter;
 
+    /**
+     * {@inheritdoc}
+     */
     protected function tearDown(): void
     {
         HeaderStack::reset();
@@ -40,18 +43,6 @@ abstract class AbstractEmitterTest extends TestCase
         $this->expectOutputString('Content!');
 
         $this->emitter->emit($response);
-    }
-
-    public function testEmitsResponseHeaders(): void
-    {
-        $response = (new Response())
-            ->withStatus(200)
-            ->withAddedHeader('Content-Type', 'text/plain');
-        $response->getBody()->write('Content!');
-
-        \ob_start();
-        $this->emitter->emit($response);
-        \ob_end_clean();
 
         $this->assertTrue(HeaderStack::has('HTTP/1.1 200 OK'));
         $this->assertTrue(HeaderStack::has('Content-Type: text/plain'));

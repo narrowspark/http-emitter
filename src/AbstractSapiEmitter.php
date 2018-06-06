@@ -88,8 +88,8 @@ abstract class AbstractSapiEmitter implements EmitterInterface
                 header(
                     \sprintf(
                     '%s: %s',
-                    $name,
-                    $value
+                        $name,
+                        $value
                     ),
                     $first,
                     $statusCode
