@@ -5,7 +5,8 @@
 .php_cs.cache
 coverage.xml
 
-composer.phar
-
 /build/logs
 /vendor
+
+composer.phar
+composer.lock
