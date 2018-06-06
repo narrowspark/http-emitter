@@ -121,10 +121,10 @@ class SapiStreamEmitter extends AbstractSapiEmitter
      *
      * @param string $header
      *
-     * @return array|false [unit, first, last, length]; returns false if no
-     *                     content range or an invalid content range is provided
+     * @return null|array [unit, first, last, length]; returns false if no
+     *                    content range or an invalid content range is provided
      */
-    private function parseContentRange($header)
+    private function parseContentRange($header): ?array
     {
         if (\preg_match('/(?P<unit>[\w]+)\s+(?P<first>\d+)-(?P<last>\d+)\/(?P<length>\d+|\*)/', $header, $matches)) {
             return [
@@ -135,6 +135,6 @@ class SapiStreamEmitter extends AbstractSapiEmitter
             ];
         }
 
-        return false;
+        return null;
     }
 }

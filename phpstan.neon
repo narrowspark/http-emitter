@@ -6,3 +6,6 @@ includes:
 parameters:
     autoload_directories:
         - %currentWorkingDirectory%/src/
+
+    ignoreErrors:
+        - '#Swoole\\Http\\Response#'
