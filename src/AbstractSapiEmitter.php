@@ -20,7 +20,8 @@ abstract class AbstractSapiEmitter implements EmitterInterface
 
         if (headers_sent($file, $line)) {
             throw new RuntimeException(\sprintf(
-                'Unable to emit response: Headers already sent in file %s on line %s.',
+                'Unable to emit response: Headers already sent in file %s on line %s. ' .
+                'This happens if echo, print, printf, print_r, var_dump, var_export or similar statement that writes to the output buffer are used.',
                 $file,
                 $line
             ));

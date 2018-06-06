@@ -69,7 +69,10 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
         }
     }
 
-    public function emitStreamResponseProvider()
+    /**
+     * @return array
+     */
+    public function emitStreamResponseProvider(): array
     {
         return [
             [true,   true,    '01234567890987654321',   10],
@@ -180,7 +183,10 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
         self::assertLessThanOrEqual($maxBufferLength, $peakBufferLength);
     }
 
-    public function emitRangeStreamResponseProvider()
+    /**
+     * @return array
+     */
+    public function emitRangeStreamResponseProvider(): array
     {
         return [
             [true,   true, ['bytes', 10,  20, '*'],    '01234567890987654321',   5],
@@ -312,7 +318,10 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
         self::assertLessThanOrEqual($maxBufferLength, $peakBufferLength);
     }
 
-    public function emitMemoryUsageProvider()
+    /**
+     * @return array
+     */
+    public function emitMemoryUsageProvider(): array
     {
         return [
             [true,   true,  1000,   20,       null,  512],
@@ -511,7 +520,10 @@ class SapiStreamEmitterTest extends AbstractEmitterTest
         self::assertEquals($contents, ob_get_clean());
     }
 
-    public function contentRangeProvider()
+    /**
+     * @return array
+     */
+    public function contentRangeProvider(): array
     {
         return [
             ['bytes 0-2/*', 'Hello world', 'Hel'],
