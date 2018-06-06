@@ -15,6 +15,9 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\StreamInterface;
 use Zend\Diactoros\Response;
 
+/**
+ * @internal
+ */
 abstract class AbstractEmitterTest extends TestCase
 {
     /**
@@ -22,7 +25,7 @@ abstract class AbstractEmitterTest extends TestCase
      */
     protected $emitter;
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         HeaderStack::reset();
     }
@@ -46,12 +49,12 @@ abstract class AbstractEmitterTest extends TestCase
             ->withAddedHeader('Content-Type', 'text/plain');
         $response->getBody()->write('Content!');
 
-        ob_start();
+        \ob_start();
         $this->emitter->emit($response);
-        ob_end_clean();
+        \ob_end_clean();
 
-        self::assertTrue(HeaderStack::has('HTTP/1.1 200 OK'));
-        self::assertTrue(HeaderStack::has('Content-Type: text/plain'));
+        $this->assertTrue(HeaderStack::has('HTTP/1.1 200 OK'));
+        $this->assertTrue(HeaderStack::has('Content-Type: text/plain'));
     }
 
     public function testMultipleSetCookieHeadersAreNotReplaced(): void
@@ -69,7 +72,7 @@ abstract class AbstractEmitterTest extends TestCase
             ['header' => 'HTTP/1.1 200 OK', 'replace' => true, 'status_code' => 200],
         ];
 
-        self::assertSame($expectedStack, HeaderStack::stack());
+        $this->assertSame($expectedStack, HeaderStack::stack());
     }
 
     public function testDoesNotLetResponseCodeBeOverriddenByPHP(): void
@@ -87,7 +90,7 @@ abstract class AbstractEmitterTest extends TestCase
             ['header' => 'HTTP/1.1 202 Accepted', 'replace' => true, 'status_code' => 202],
         ];
 
-        self::assertSame($expectedStack, HeaderStack::stack());
+        $this->assertSame($expectedStack, HeaderStack::stack());
     }
 
     public function testEmitterRespectLocationHeader(): void
@@ -103,7 +106,7 @@ abstract class AbstractEmitterTest extends TestCase
             ['header' => 'HTTP/1.1 200 OK', 'replace' => true, 'status_code' => 200],
         ];
 
-        self::assertSame($expectedStack, HeaderStack::stack());
+        $this->assertSame($expectedStack, HeaderStack::stack());
     }
 
     public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown(): void
@@ -115,9 +118,9 @@ abstract class AbstractEmitterTest extends TestCase
             ->withStatus(200)
             ->withBody($stream->reveal());
 
-        ob_start();
+        \ob_start();
         $this->emitter->emit($response);
-        ob_end_clean();
+        \ob_end_clean();
 
         foreach (HeaderStack::stack() as $header) {
             $this->assertNotContains('Content-Length:', $header['header']);

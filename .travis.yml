@@ -1,36 +1,56 @@
+dist: trusty
+sudo: false
 language: php
 
-sudo: false
-
-matrix:
-  include:
-    - php: 7.1
-      env: SETUP=basic CS=true
-    - php: 7.1
-      env: SETUP=basic PHPSTAN=true
-    - php: 7.2
-      env: SETUP=basic SEND_COVERAGE=true PHPUNIT=true
-  fast_finish: true
+env:
+  global:
+    - TEST="./vendor/bin/phpunit --verbose"
+    - COMPOSER_UP="composer update --no-interaction --prefer-dist --no-progress --profile --no-suggest"
 
 cache:
   directories:
-    - $HOME/.composer/cache
+    - $HOME/.composer/cache/files
     - $HOME/.php-cs-fixer
 
 before_install:
-  - chmod a+x ./build/travis/script.sh && chmod a+x ./build/travis/after_success.sh
+  - stty cols 120
+  - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
+  - chmod a+x ./build/travis/configure_php.sh
+  - ./build/travis/configure_php.sh
 
 install:
-  - travis_retry composer install --no-interaction --prefer-dist --no-progress --profile --no-suggest
+  - composer global require hirak/prestissimo
+  - $COMPOSER_UP
 
-script:
-  - ./build/travis/script.sh
+jobs:
+  include:
+    - stage: Test
+      php: 7.1
+      env: REMOVE_XDEBUG=true
+    - stage: Test
+      php: 7.2
+      env: REMOVE_XDEBUG=true
 
-after_success:
-  - ./build/travis/after_success.sh
+    - stage: Coding standard
+      php: 7.2
+      env: REMOVE_XDEBUG=true
+      script:
+        - ./vendor/bin/php-cs-fixer fix --verbose --diff --dry-run
+    - stage: Coding standard
+      php: 7.2
+      env: REMOVE_XDEBUG=false
+      script:
+        - ./vendor/bin/phpstan analyse -c phpstan.neon -l 7 src
+
+    - stage: Coverage
+      php: 7.2
+      env: REMOVE_XDEBUG=false
+      script:
+        - bash -xc "$TEST -c ./phpunit.xml.dist --coverage-clover=coverage.xml"
+      after_success:
+        - bash <(curl -s https://codecov.io/bash)
 
 notifications:
-  email: false
-  webhooks:
-    urls:
-      - https://webhooks.gitter.im/e/5886ad33ac123a7c06b0
+  email:
+    on_success: never
+    on_failure: change

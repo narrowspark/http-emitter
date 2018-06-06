@@ -27,7 +27,7 @@ abstract class AbstractSapiEmitter implements EmitterInterface
             ));
         }
 
-        if (ob_get_level() > 0 && ob_get_length() > 0) {
+        if (\ob_get_level() > 0 && \ob_get_length() > 0) {
             throw new RuntimeException('Output has been emitted previously; cannot emit response.');
         }
     }
@@ -82,7 +82,7 @@ abstract class AbstractSapiEmitter implements EmitterInterface
 
         foreach ($response->getHeaders() as $header => $values) {
             $name  = $this->toWordCase($header);
-            $first = $name === 'Set-Cookie' ? false : true;
+            $first = $name !== 'Set-Cookie';
 
             foreach ($values as $value) {
                 header(

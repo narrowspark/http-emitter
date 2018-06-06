@@ -20,17 +20,20 @@
     ],
     "require": {
         "php": "^7.1",
-        "psr/http-message": "^1.0"
+        "psr/http-message": "^1.0",
+        "symfony/polyfill-mbstring": "^1.8.0"
     },
     "provide": {
         "psr/container-implementation": "^1.0",
         "psr/http-message-implementation": "^1.0"
     },
     "require-dev": {
-        "narrowspark/php-cs-fixer-config": "^2.0",
-        "phpstan/phpstan": "^0.8",
-        "phpunit/phpunit": "^6.0",
-        "zendframework/zend-diactoros": "^1.3"
+        "narrowspark/php-cs-fixer-config": "^3.0.1",
+        "phpstan/phpstan": "^0.9",
+        "phpstan/phpstan-phpunit": "^0.9",
+        "phpstan/phpstan-strict-rules": "^0.9",
+        "phpunit/phpunit": "^7.0",
+        "zendframework/zend-diactoros": "^1.7.0"
     },
     "config": {
         "optimize-autoloader": true,
@@ -52,10 +55,12 @@
             "tests/OverwritePhpFunctions.php"
         ]
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "scripts": {
-        "cs": "sh vendor/bin/php-cs-fixer fix",
-        "phpstan": "sh vendor/bin/phpstan analyse -c phpstan.neon -l 6 src/"
+        "coverage": "phpunit --coverage-html=\"build/logs\"",
+        "cs": "php-cs-fixer fix",
+        "phpstan": "phpstan analyse -c phpstan.neon -l 7 src --memory-limit=-1",
+        "test": "phpunit"
     },
     "support": {
         "issues": "https://github.com/narrowspark/http-emitter/issues",

@@ -13,9 +13,12 @@ namespace Narrowspark\HttpEmitter\Tests;
 use Narrowspark\HttpEmitter\SapiEmitter;
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
 
-class SapiEmitterTest extends AbstractEmitterTest
+/**
+ * @internal
+ */
+final class SapiEmitterTest extends AbstractEmitterTest
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         HeaderStack::reset();
 

@@ -9,9 +9,12 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\StreamInterface;
 use Zend\Diactoros\Response;
 
-class UtilTest extends TestCase
+/**
+ * @internal
+ */
+final class UtilTest extends TestCase
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         HeaderStack::reset();
 
@@ -27,13 +30,13 @@ class UtilTest extends TestCase
 
         $response = Util::injectContentLength($response);
 
-        ob_start();
+        \ob_start();
         $this->emitter->emit($response);
-        ob_end_clean();
+        \ob_end_clean();
 
-        self::assertTrue(HeaderStack::has('HTTP/1.1 200 OK'));
-        self::assertTrue(HeaderStack::has('Content-Type: text/plain'));
-        self::assertTrue(HeaderStack::has('Content-Length: 8'));
+        $this->assertTrue(HeaderStack::has('HTTP/1.1 200 OK'));
+        $this->assertTrue(HeaderStack::has('Content-Type: text/plain'));
+        $this->assertTrue(HeaderStack::has('Content-Length: 8'));
     }
 
     public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown(): void
@@ -48,12 +51,12 @@ class UtilTest extends TestCase
 
         $response = Util::injectContentLength($response);
 
-        ob_start();
+        \ob_start();
         $this->emitter->emit($response);
-        ob_end_clean();
+        \ob_end_clean();
 
         foreach (HeaderStack::stack() as $header) {
-            self::assertNotContains('Content-Length:', $header['header']);
+            $this->assertNotContains('Content-Length:', $header['header']);
         }
     }
 
@@ -64,14 +67,14 @@ class UtilTest extends TestCase
             ->withAddedHeader('Content-Type', 'text/plain');
         $response->getBody()->write('Content!');
 
-        ob_start();
+        \ob_start();
         $this->emitter->emit($response);
 
-        self::assertSame(2, ob_get_level());
+        $this->assertSame(2, \ob_get_level());
         // flush
         Util::closeOutputBuffers(1, true);
 
-        self::assertSame(1, ob_get_level());
+        $this->assertSame(1, \ob_get_level());
     }
 
     public function testCloseOutputBuffersWithClean(): void
@@ -81,7 +84,7 @@ class UtilTest extends TestCase
             ->withAddedHeader('Content-Type', 'text/plain');
         $response->getBody()->write('Content!');
 
-        ob_start();
+        \ob_start();
         $this->emitter->emit($response);
 
         $content = \ob_get_contents(); //'Content!'
@@ -89,6 +92,6 @@ class UtilTest extends TestCase
         // clear
         Util::closeOutputBuffers(1, false);
 
-        self::assertNotSame(\ob_get_contents(), $content);
+        $this->assertNotSame(\ob_get_contents(), $content);
     }
 }
