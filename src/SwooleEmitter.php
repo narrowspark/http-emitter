@@ -59,11 +59,7 @@ class SwooleEmitter extends AbstractSapiEmitter
     }
 
     /**
-     * Emit the headers.
-     *
-     * @param \Psr\Http\Message\ResponseInterface $response
-     *
-     * @return void
+     * {@inheritdoc}
      */
     protected function emitHeaders(ResponseInterface $response): void
     {
@@ -77,7 +73,7 @@ class SwooleEmitter extends AbstractSapiEmitter
     }
 
     /**
-     * Emit the message body.
+     * Sends the message body of the response.
      *
      * @param \Psr\Http\Message\ResponseInterface $response
      *
