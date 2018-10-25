@@ -40,7 +40,7 @@ abstract class AbstractSapiEmitter implements EmitterInterface
      *
      * It's important to mention that, in order to prevent PHP from changing
      * the status code of the emitted response, this method should be called
-     * after `sendBody()`
+     * after `emitBody()`
      *
      * @param \Psr\Http\Message\ResponseInterface $response
      *
@@ -113,5 +113,22 @@ abstract class AbstractSapiEmitter implements EmitterInterface
         $filtered = \ucwords($filtered);
 
         return \str_replace(' ', '-', $filtered);
+    }
+
+    /**
+     * Flushes output buffers and closes the connection to the client,
+     * which ensures that no further output can be sent.
+     *
+     * @return void
+     */
+    protected function closeConnection(): void
+    {
+        if (! \in_array(\PHP_SAPI, ['cli', 'phpdbg'], true)) {
+            Util::closeOutputBuffers(0, true);
+        }
+
+        if (\function_exists('fastcgi_finish_request')) {
+            \fastcgi_finish_request();
+        }
     }
 }

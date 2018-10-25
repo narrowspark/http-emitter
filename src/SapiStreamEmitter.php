@@ -43,11 +43,11 @@ class SapiStreamEmitter extends AbstractSapiEmitter
 
         if (\is_array($range) && $range[0] === 'bytes') {
             $this->emitBodyRange($range, $response, $this->maxBufferLength);
-
-            return;
+        } else {
+            $this->emitBody($response, $this->maxBufferLength);
         }
 
-        $this->sendBody($response, $this->maxBufferLength);
+        $this->closeConnection();
     }
 
     /**
@@ -56,7 +56,7 @@ class SapiStreamEmitter extends AbstractSapiEmitter
      * @param \Psr\Http\Message\ResponseInterface $response
      * @param int                                 $maxBufferLength
      */
-    private function sendBody(ResponseInterface $response, int $maxBufferLength): void
+    private function emitBody(ResponseInterface $response, int $maxBufferLength): void
     {
         $body = $response->getBody();
 
