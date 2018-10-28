@@ -23,5 +23,5 @@ interface EmitterInterface
      *
      * @return void
      */
-    public function emit(ResponseInterface $response);
+    public function emit(ResponseInterface $response): void;
 }
