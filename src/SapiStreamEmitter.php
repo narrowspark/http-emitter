@@ -96,7 +96,7 @@ class SapiStreamEmitter extends AbstractSapiEmitter
         }
 
         if (! $body->isReadable()) {
-            echo \mb_substr($body->getContents(), $first, $length);
+            echo \mb_substr($body->getContents(), $first, (int) $length);
 
             return;
         }
@@ -111,7 +111,7 @@ class SapiStreamEmitter extends AbstractSapiEmitter
         }
 
         if ($remaining > 0 && ! $body->eof()) {
-            echo $body->read($remaining);
+            echo $body->read((int) $remaining);
         }
     }
 
@@ -126,7 +126,7 @@ class SapiStreamEmitter extends AbstractSapiEmitter
      */
     private function parseContentRange($header): ?array
     {
-        if (\preg_match('/(?P<unit>[\w]+)\s+(?P<first>\d+)-(?P<last>\d+)\/(?P<length>\d+|\*)/', $header, $matches)) {
+        if (\preg_match('/(?P<unit>[\w]+)\s+(?P<first>\d+)-(?P<last>\d+)\/(?P<length>\d+|\*)/', $header, $matches) === 1) {
             return [
                 $matches['unit'],
                 (int) $matches['first'],

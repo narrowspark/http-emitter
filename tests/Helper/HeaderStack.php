@@ -46,7 +46,7 @@ class HeaderStack
      *
      * @return bool
      */
-    public static function has($header)
+    public static function has($header): bool
     {
         foreach (self::$data as $item) {
             if ($item['header'] === $header) {

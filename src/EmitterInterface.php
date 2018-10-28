@@ -20,6 +20,8 @@ interface EmitterInterface
      * response; e.g., if headers have already been sent.
      *
      * @param \Psr\Http\Message\ResponseInterface $response
+     *
+     * @return void
      */
     public function emit(ResponseInterface $response);
 }
