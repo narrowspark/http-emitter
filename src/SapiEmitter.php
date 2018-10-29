@@ -18,7 +18,9 @@ class SapiEmitter extends AbstractSapiEmitter
         // Set the status _after_ the headers, because of PHP's "helpful" behavior with location headers.
         $this->emitStatusLine($response);
 
-        $this->sendBody($response);
+        $this->emitBody($response);
+
+        $this->closeConnection();
     }
 
     /**
@@ -26,7 +28,7 @@ class SapiEmitter extends AbstractSapiEmitter
      *
      * @param \Psr\Http\Message\ResponseInterface $response
      */
-    private function sendBody(ResponseInterface $response): void
+    private function emitBody(ResponseInterface $response): void
     {
         echo $response->getBody();
     }
