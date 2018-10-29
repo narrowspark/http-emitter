@@ -13,6 +13,7 @@ namespace Narrowspark\HttpEmitter\Tests;
 use Narrowspark\HttpEmitter\SapiStreamEmitter;
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
 use Prophecy\Argument;
+use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Http\Message\StreamInterface;
 use Zend\Diactoros\CallbackStream;
 use Zend\Diactoros\Response;
@@ -252,8 +253,13 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
      *
      * @dataProvider emitRangeStreamResponseProvider
      */
-    public function testEmitRangeStreamResponse(bool $seekable, bool $readable, array $range, string $contents, int $maxBufferLength): void
-    {
+    public function testEmitRangeStreamResponse(
+        bool $seekable,
+        bool $readable,
+        array $range,
+        string $contents,
+        int $maxBufferLength
+    ): void {
         [$unit, $first, $last, $length]     = $range;
         $size                               = \mb_strlen($contents);
 
@@ -580,10 +586,14 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
      * @param null|callable   $trackPeakBufferLength Called on "read" calls.
      *                                               Receives data length (i.e. data length <= buffer length).
      *
-     * @return ObjectProphecy returns new stream prophecy
+     * @return \Prophecy\Prophecy\ObjectProphecy returns new stream prophecy
      */
-    private function setUpStreamProphecy($contents, int $size, int $startPosition, ?callable $trackPeakBufferLength = null)
-    {
+    private function setUpStreamProphecy(
+        $contents,
+        int $size,
+        int $startPosition,
+        ?callable $trackPeakBufferLength = null
+    ): ObjectProphecy {
         $position = $startPosition;
 
         $stream = $this->prophesize(StreamInterface::class);
