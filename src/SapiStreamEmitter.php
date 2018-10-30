@@ -96,7 +96,7 @@ class SapiStreamEmitter extends AbstractSapiEmitter
         }
 
         if (! $body->isReadable()) {
-            echo \mb_substr($body->getContents(), $first, (int) $length);
+            echo \substr($body->getContents(), $first, (int) $length);
 
             return;
         }
@@ -105,7 +105,7 @@ class SapiStreamEmitter extends AbstractSapiEmitter
 
         while ($remaining >= $maxBufferLength && ! $body->eof()) {
             $contents   = $body->read($maxBufferLength);
-            $remaining -= \mb_strlen($contents);
+            $remaining -= \strlen($contents);
 
             echo $contents;
         }

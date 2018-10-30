@@ -110,10 +110,10 @@ final class SwooleEmitterTest extends TestCase
             ->header('Content-Type', 'text/plain')
             ->shouldHaveBeenCalled();
         $this->swooleResponse
-            ->write(\mb_substr($content, 0, $this->emitter->getChunkSize()))
+            ->write(\substr($content, 0, $this->emitter->getChunkSize()))
             ->shouldHaveBeenCalled();
         $this->swooleResponse
-            ->write(\mb_substr($content, $this->emitter->getChunkSize()))
+            ->write(\substr($content, $this->emitter->getChunkSize()))
             ->shouldHaveBeenCalled();
         $this->swooleResponse
             ->end()

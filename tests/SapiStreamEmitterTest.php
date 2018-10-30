@@ -116,7 +116,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
      */
     public function testEmitStreamResponse(bool $seekable, bool $readable, string $contents, int $maxBufferLength): void
     {
-        $size               = \mb_strlen($contents);
+        $size               = \strlen($contents);
         $startPosition      = 0;
         $peakBufferLength   = 0;
         $rewindCalled       = false;
@@ -261,7 +261,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         int $maxBufferLength
     ): void {
         [$unit, $first, $last, $length]     = $range;
-        $size                               = \mb_strlen($contents);
+        $size                               = \strlen($contents);
 
         if ($readable && ! $seekable) {
             $startPosition = $first;
@@ -323,7 +323,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         $stream->checkProphecyMethodsPredictions();
 
         $this->assertEquals($seekable, $seekCalled);
-        $this->assertEquals(\mb_substr($contents, $first, $last - $first + 1), $emittedContents);
+        $this->assertEquals(\substr($contents, $first, $last - $first + 1), $emittedContents);
         $this->assertLessThanOrEqual($maxBufferLength, $peakBufferLength);
     }
 
@@ -641,14 +641,14 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
                 if (\is_callable($contents)) {
                     $data = $contents($position, $args[0]);
                 } else {
-                    $data = \mb_substr($contents, $position, $args[0]);
+                    $data = \substr($contents, $position, $args[0]);
                 }
 
                 if ($trackPeakBufferLength) {
                     $trackPeakBufferLength($args[0]);
                 }
 
-                $position += \mb_strlen($data);
+                $position += \strlen($data);
 
                 return $data;
             });
@@ -657,10 +657,10 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             if (\is_callable($contents)) {
                 $remainingContents = $contents($position);
             } else {
-                $remainingContents = \mb_substr($contents, $position);
+                $remainingContents = \substr($contents, $position);
             }
 
-            $position += \mb_strlen($remainingContents);
+            $position += \strlen($remainingContents);
 
             return $remainingContents;
         });
