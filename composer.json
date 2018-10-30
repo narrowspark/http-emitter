@@ -28,7 +28,7 @@
         "psr/http-message-implementation": "^1.0"
     },
     "require-dev": {
-        "narrowspark/coding-standard": "^1.3.0",
+        "narrowspark/coding-standard": "^1.4.0",
         "phpunit/phpunit": "^7.0",
         "zendframework/zend-diactoros": "^1.7.0"
     },
