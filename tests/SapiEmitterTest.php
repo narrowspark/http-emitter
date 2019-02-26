@@ -10,8 +10,9 @@ namespace Narrowspark\HttpEmitter\Tests;
  * @license   https://github.com/zendframework/zend-diactoros/blob/master/LICENSE.md New BSD License
  */
 
-use Narrowspark\HttpEmitter\SapiStreamEmitter;
+use Narrowspark\HttpEmitter\SapiEmitter;
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Http\Message\StreamInterface;
@@ -25,13 +26,23 @@ use Zend\Diactoros\Response\TextResponse;
 /**
  * @internal
  */
-final class SapiStreamEmitterTest extends AbstractEmitterTest
+final class SapiEmitterTest extends TestCase
 {
+    /**
+     * @var \Narrowspark\HttpEmitter\SapiEmitter
+     */
+    protected $emitter;
+
     protected function setUp(): void
     {
         HeaderStack::reset();
 
-        $this->emitter = new SapiStreamEmitter();
+        $this->emitter = new SapiEmitter();
+    }
+
+    protected function tearDown(): void
+    {
+        HeaderStack::reset();
     }
 
     public function testEmitCallbackStreamResponse(): void
@@ -666,5 +677,72 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         });
 
         return $stream;
+    }
+
+    public function testEmitsMessageBody(): void
+    {
+        $response = (new Response())
+            ->withStatus(200)
+            ->withAddedHeader('Content-Type', 'text/plain');
+        $response->getBody()->write('Content!');
+
+        $this->expectOutputString('Content!');
+
+        $this->emitter->emit($response);
+
+        $this->assertTrue(HeaderStack::has('HTTP/1.1 200 OK'));
+        $this->assertTrue(HeaderStack::has('Content-Type: text/plain'));
+    }
+
+    public function testMultipleSetCookieHeadersAreNotReplaced(): void
+    {
+        $response = (new Response())
+            ->withStatus(200)
+            ->withAddedHeader('Set-Cookie', 'foo=bar')
+            ->withAddedHeader('Set-Cookie', 'bar=baz');
+
+        $this->emitter->emit($response);
+
+        $expectedStack = [
+            ['header' => 'Set-Cookie: foo=bar', 'replace' => false, 'status_code' => 200],
+            ['header' => 'Set-Cookie: bar=baz', 'replace' => false, 'status_code' => 200],
+            ['header' => 'HTTP/1.1 200 OK', 'replace' => true, 'status_code' => 200],
+        ];
+
+        $this->assertSame($expectedStack, HeaderStack::stack());
+    }
+
+    public function testDoesNotLetResponseCodeBeOverriddenByPHP(): void
+    {
+        $response = (new Response())
+            ->withStatus(202)
+            ->withAddedHeader('Location', 'http://api.my-service.com/12345678')
+            ->withAddedHeader('Content-Type', 'text/plain');
+
+        $this->emitter->emit($response);
+
+        $expectedStack = [
+            ['header' => 'Location: http://api.my-service.com/12345678', 'replace' => true, 'status_code' => 202],
+            ['header' => 'Content-Type: text/plain', 'replace' => true, 'status_code' => 202],
+            ['header' => 'HTTP/1.1 202 Accepted', 'replace' => true, 'status_code' => 202],
+        ];
+
+        $this->assertSame($expectedStack, HeaderStack::stack());
+    }
+
+    public function testEmitterRespectLocationHeader(): void
+    {
+        $response = (new Response())
+            ->withStatus(200)
+            ->withAddedHeader('Location', 'http://api.my-service.com/12345678');
+
+        $this->emitter->emit($response);
+
+        $expectedStack = [
+            ['header' => 'Location: http://api.my-service.com/12345678', 'replace' => true, 'status_code' => 200],
+            ['header' => 'HTTP/1.1 200 OK', 'replace' => true, 'status_code' => 200],
+        ];
+
+        $this->assertSame($expectedStack, HeaderStack::stack());
     }
 }
