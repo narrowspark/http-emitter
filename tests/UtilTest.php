@@ -59,39 +59,4 @@ final class UtilTest extends TestCase
             $this->assertNotContains('Content-Length:', $header['header']);
         }
     }
-
-    public function testCloseOutputBuffersWithFlush(): void
-    {
-        $response = (new Response())
-            ->withStatus(200)
-            ->withAddedHeader('Content-Type', 'text/plain');
-        $response->getBody()->write('Content!');
-
-        \ob_start();
-        $this->emitter->emit($response);
-
-        $this->assertSame(2, \ob_get_level());
-        // flush
-        Util::closeOutputBuffers(1, true);
-
-        $this->assertSame(1, \ob_get_level());
-    }
-
-    public function testCloseOutputBuffersWithClean(): void
-    {
-        $response = (new Response())
-            ->withStatus(200)
-            ->withAddedHeader('Content-Type', 'text/plain');
-        $response->getBody()->write('Content!');
-
-        \ob_start();
-        $this->emitter->emit($response);
-
-        $content = \ob_get_contents(); //'Content!'
-
-        // clear
-        Util::closeOutputBuffers(1, false);
-
-        $this->assertNotSame(\ob_get_contents(), $content);
-    }
 }

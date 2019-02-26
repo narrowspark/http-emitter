@@ -143,7 +143,13 @@ abstract class AbstractSapiEmitter
     protected function closeConnection(): void
     {
         if (! \in_array(\PHP_SAPI, ['cli', 'phpdbg'], true)) {
-            Util::closeOutputBuffers(0, true);
+            $status = \ob_get_status(true);
+            $level  = \count($status);
+            $flags  = \PHP_OUTPUT_HANDLER_REMOVABLE | (\PHP_OUTPUT_HANDLER_FLUSHABLE);
+
+            while ($level-- > 0 && (bool) ($s = $status[$level]) && ($s['del'] ?? ! isset($s['flags']) || $flags === ($s['flags'] & $flags))) {
+                \ob_end_flush();
+            }
         }
 
         if (\function_exists('fastcgi_finish_request')) {
