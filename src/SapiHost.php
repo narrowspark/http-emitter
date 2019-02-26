@@ -2,48 +2,96 @@
 declare(strict_types=1);
 namespace Narrowspark\HttpEmitter;
 
+use Nyholm\Psr7Server\ServerRequestCreator;
+use Nyholm\Psr7Server\ServerRequestCreatorInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\UploadedFileFactoryInterface;
+use Psr\Http\Message\UriFactoryInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
-class SapiEmitter
+/**
+ * This class implements a SAPI-environment Host for a PSR-15 HTTP Handler.
+ */
+class SapiHost
 {
+    /**
+     * @var ServerRequestFactoryInterface
+     */
+    private $serverRequestFactory;
+
+    /**
+     * @var UriFactoryInterface
+     */
+    private $uriFactory;
+
+    /**
+     * @var UploadedFileFactoryInterface
+     */
+    private $uploadedFileFactory;
+
+    /**
+     * @var StreamFactoryInterface
+     */
+    private $streamFactory;
+
+    /**
+     * @var ResponseFactoryInterface
+     */
+    private $responseFactory;
+
+    /**
+     * @var ServerRequestCreatorInterface
+     */
+    private $serverRequestCreator;
+
     /**
      * Maximum output buffering size for each iteration.
      *
      * @var int
      */
-    protected $maxBufferLength = 8192;
+    private $maxBufferLength;
 
-    /**
-     * Set the maximum output buffering level.
-     *
-     * @param int $maxBufferLength
-     *
-     * @return void
-     */
-    public function setMaxBufferLength(int $maxBufferLength): void
-    {
+    public function __construct(
+        ServerRequestFactoryInterface $serverRequestFactory,
+        UriFactoryInterface $uriFactory,
+        UploadedFileFactoryInterface $uploadedFileFactory,
+        StreamFactoryInterface $streamFactory,
+        ResponseFactoryInterface $responseFactory,
+        int $maxBufferLength = 8192,
+        ?ServerRequestCreatorInterface $serverRequestCreator = null
+    ) {
+        $this->serverRequestFactory = $serverRequestFactory;
+        $this->uriFactory = $uriFactory;
+        $this->uploadedFileFactory = $uploadedFileFactory;
+        $this->streamFactory = $streamFactory;
+        $this->responseFactory = $responseFactory;
         $this->maxBufferLength = $maxBufferLength;
+
+        $this->serverRequestCreator = $serverRequestCreator
+            ?: new ServerRequestCreator(
+                $serverRequestFactory,
+                $uriFactory,
+                $uploadedFileFactory,
+                $streamFactory
+            );
     }
 
     /**
-     * Emit a response.
+     * Dispatch the given Handler in the PHP SAPI-environment.
      *
-     * Emits a response, including status line, headers, and the message body,
-     * according to the environment.
+     * Processes the incoming HTTP Request from the SAPI-environment and emits the Response.
      *
-     * Implementations of this method may be written in such a way as to have
-     * side effects, such as usage of header() or pushing output to the
-     * output buffer.
-     *
-     * Implementations MAY raise exceptions if they are unable to emit the
-     * response; e.g., if headers have already been sent.
-     *
-     * @param \Psr\Http\Message\ResponseInterface $response
-     *
-     * @return void
+     * @param RequestHandlerInterface $handler
      */
-    public function emit(ResponseInterface $response): void
+    public function dispatch(RequestHandlerInterface $handler): void
     {
+        $request = $this->serverRequestCreator->fromGlobals();
+
+        $response = $handler->handle($request);
+
         $this->assertNoPreviousOutput();
 
         $this->emitHeaders($response);

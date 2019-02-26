@@ -10,11 +10,14 @@ namespace Narrowspark\HttpEmitter\Tests;
  * @license   https://github.com/zendframework/zend-diactoros/blob/master/LICENSE.md New BSD License
  */
 
-use Narrowspark\HttpEmitter\SapiEmitter;
+use Narrowspark\HttpEmitter\SapiHost;
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
+use Narrowspark\HttpEmitter\Tests\Helper\TestRequestHandler;
+use Narrowspark\HttpEmitter\Tests\Helper\TestServerRequestCreator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Zend\Diactoros\CallbackStream;
 use Zend\Diactoros\Response;
@@ -22,27 +25,91 @@ use Zend\Diactoros\Response\EmptyResponse;
 use Zend\Diactoros\Response\HtmlResponse;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Diactoros\Response\TextResponse;
+use Zend\Diactoros\ResponseFactory;
+use Zend\Diactoros\ServerRequest;
+use Zend\Diactoros\ServerRequestFactory;
+use Zend\Diactoros\StreamFactory;
+use Zend\Diactoros\UploadedFileFactory;
+use Zend\Diactoros\UriFactory;
 
 /**
  * @internal
  */
-final class SapiEmitterTest extends TestCase
+final class SapiHostTest extends TestCase
 {
     /**
-     * @var \Narrowspark\HttpEmitter\SapiEmitter
+     * @var int
      */
-    protected $emitter;
+    protected $maxBufferLength;
+
+    /**
+     * @var TestServerRequestCreator|null
+     */
+    protected $serverRequestCreator;
 
     protected function setUp(): void
     {
-        HeaderStack::reset();
+        $this->maxBufferLength = 8192;
+        $this->serverRequestCreator = null;
 
-        $this->emitter = new SapiEmitter();
+        HeaderStack::reset();
     }
 
     protected function tearDown(): void
     {
         HeaderStack::reset();
+    }
+
+    public function setMaxBufferLength(int $maxBufferLength): void
+    {
+        $this->maxBufferLength = $maxBufferLength;
+    }
+    
+    protected function emit(ResponseInterface $response): void
+    {
+        $this->createHost()->dispatch(new TestRequestHandler($response));
+    }
+
+    protected function createHost(): SapiHost
+    {
+        return new SapiHost(
+            new ServerRequestFactory(),
+            new UriFactory(),
+            new UploadedFileFactory(),
+            new StreamFactory(),
+            new ResponseFactory(),
+            $this->maxBufferLength,
+            $this->serverRequestCreator
+        );
+    }
+
+    public function testProcessIncomingRequest(): void
+    {
+        $request = new ServerRequest([], [], "/", "GET");
+
+        $response = new Response();
+
+        $response->getBody()->write("Hello World");
+
+        $this->serverRequestCreator = new TestServerRequestCreator($request);
+
+        $handler = new TestRequestHandler($response);
+
+        \ob_start();
+        $this->createHost()->dispatch($handler);
+        $body = \ob_get_clean();
+
+        $this->assertEquals(
+            "Hello World",
+            $body,
+            "the Host emits the Response that is produced by the RequestHandler implementation"
+        );
+
+        $this->assertSame(
+            $request,
+            $handler->received_request,
+            "the Host processes the Request that is provided by the ServerRequestCreator implementation"
+        );
     }
 
     public function testEmitCallbackStreamResponse(): void
@@ -56,7 +123,7 @@ final class SapiEmitterTest extends TestCase
             ->withBody($stream);
         \ob_start();
 
-        $this->emitter->emit($response);
+        $this->emit($response);
 
         $this->assertEquals('it works', \ob_get_clean());
     }
@@ -76,7 +143,7 @@ final class SapiEmitterTest extends TestCase
             ->withBody($stream->reveal());
 
         \ob_start();
-        $this->emitter->emit($response);
+        $this->emit($response);
         \ob_end_clean();
 
         foreach (HeaderStack::stack() as $header) {
@@ -152,8 +219,8 @@ final class SapiEmitterTest extends TestCase
             ->withBody($stream->reveal());
 
         \ob_start();
-        $this->emitter->setMaxBufferLength($maxBufferLength);
-        $this->emitter->emit($response);
+        $this->setMaxBufferLength($maxBufferLength);
+        $this->emit($response);
         $emittedContents = \ob_get_clean();
 
         if ($seekable) {
@@ -302,8 +369,8 @@ final class SapiEmitterTest extends TestCase
             ->withBody($stream->reveal());
 
         \ob_start();
-        $this->emitter->setMaxBufferLength($maxBufferLength);
-        $this->emitter->emit($response);
+        $this->setMaxBufferLength($maxBufferLength);
+        $this->emit($response);
         $emittedContents = \ob_get_clean();
 
         $stream->rewind()->shouldNotBeCalled();
@@ -450,8 +517,8 @@ final class SapiEmitterTest extends TestCase
 
         \gc_disable();
 
-        $this->emitter->setMaxBufferLength($maxBufferLength);
-        $this->emitter->emit($response);
+        $this->setMaxBufferLength($maxBufferLength);
+        $this->emit($response);
 
         \ob_end_flush();
 
@@ -472,7 +539,7 @@ final class SapiEmitterTest extends TestCase
 
         \ob_start();
 
-        $this->emitter->emit($response);
+        $this->emit($response);
 
         $this->assertEmpty($response->getHeaderLine('content-type'));
         $this->assertEmpty(\ob_get_clean());
@@ -491,7 +558,7 @@ final class SapiEmitterTest extends TestCase
             ->withStatus(200);
 
         \ob_start();
-        $this->emitter->emit($response);
+        $this->emit($response);
         $this->assertEquals('text/html; charset=utf-8', $response->getHeaderLine('content-type'));
         $this->assertEquals($contents, \ob_get_clean());
     }
@@ -524,7 +591,7 @@ final class SapiEmitterTest extends TestCase
 
         \ob_start();
 
-        $this->emitter->emit($response);
+        $this->emit($response);
 
         $this->assertEquals('application/json', $response->getHeaderLine('content-type'));
         $this->assertEquals(\json_encode($contents), \ob_get_clean());
@@ -538,7 +605,7 @@ final class SapiEmitterTest extends TestCase
             ->withStatus(200);
 
         \ob_start();
-        $this->emitter->emit($response);
+        $this->emit($response);
         $this->assertEquals('text/plain; charset=utf-8', $response->getHeaderLine('content-type'));
         $this->assertEquals($contents, \ob_get_clean());
     }
@@ -570,7 +637,7 @@ final class SapiEmitterTest extends TestCase
         $response->getBody()->write($body);
 
         \ob_start();
-        $this->emitter->emit($response);
+        $this->emit($response);
         $this->assertEquals($expected, \ob_get_clean());
     }
 
@@ -584,7 +651,7 @@ final class SapiEmitterTest extends TestCase
             ->withHeader('Content-Range', 'bytes 3-6/*');
 
         \ob_start();
-        $this->emitter->emit($response);
+        $this->emit($response);
         $this->assertEquals('lo w', \ob_get_clean());
     }
 
@@ -688,7 +755,7 @@ final class SapiEmitterTest extends TestCase
 
         $this->expectOutputString('Content!');
 
-        $this->emitter->emit($response);
+        $this->emit($response);
 
         $this->assertTrue(HeaderStack::has('HTTP/1.1 200 OK'));
         $this->assertTrue(HeaderStack::has('Content-Type: text/plain'));
@@ -701,7 +768,7 @@ final class SapiEmitterTest extends TestCase
             ->withAddedHeader('Set-Cookie', 'foo=bar')
             ->withAddedHeader('Set-Cookie', 'bar=baz');
 
-        $this->emitter->emit($response);
+        $this->emit($response);
 
         $expectedStack = [
             ['header' => 'Set-Cookie: foo=bar', 'replace' => false, 'status_code' => 200],
@@ -719,7 +786,7 @@ final class SapiEmitterTest extends TestCase
             ->withAddedHeader('Location', 'http://api.my-service.com/12345678')
             ->withAddedHeader('Content-Type', 'text/plain');
 
-        $this->emitter->emit($response);
+        $this->emit($response);
 
         $expectedStack = [
             ['header' => 'Location: http://api.my-service.com/12345678', 'replace' => true, 'status_code' => 202],
@@ -736,7 +803,7 @@ final class SapiEmitterTest extends TestCase
             ->withStatus(200)
             ->withAddedHeader('Location', 'http://api.my-service.com/12345678');
 
-        $this->emitter->emit($response);
+        $this->emit($response);
 
         $expectedStack = [
             ['header' => 'Location: http://api.my-service.com/12345678', 'replace' => true, 'status_code' => 200],
