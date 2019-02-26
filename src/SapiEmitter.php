@@ -157,7 +157,7 @@ class SapiEmitter
      *
      * @return void
      */
-    protected function assertNoPreviousOutput(): void
+    private function assertNoPreviousOutput(): void
     {
         $file = $line = null;
 
@@ -189,7 +189,7 @@ class SapiEmitter
      *
      * @return void
      */
-    protected function emitStatusLine(ResponseInterface $response): void
+    private function emitStatusLine(ResponseInterface $response): void
     {
         $statusCode = $response->getStatusCode();
 
@@ -219,7 +219,7 @@ class SapiEmitter
      *
      * @return void
      */
-    protected function emitHeaders(ResponseInterface $response): void
+    private function emitHeaders(ResponseInterface $response): void
     {
         $statusCode = $response->getStatusCode();
 
@@ -250,7 +250,7 @@ class SapiEmitter
      *
      * @return string
      */
-    protected function toWordCase(string $header): string
+    private function toWordCase(string $header): string
     {
         $filtered = \str_replace('-', ' ', $header);
         $filtered = \ucwords($filtered);
@@ -264,7 +264,7 @@ class SapiEmitter
      *
      * @return void
      */
-    protected function closeConnection(): void
+    private function closeConnection(): void
     {
         if (! \in_array(\PHP_SAPI, ['cli', 'phpdbg'], true)) {
             $status = \ob_get_status(true);
