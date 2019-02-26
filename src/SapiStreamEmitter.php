@@ -18,13 +18,11 @@ class SapiStreamEmitter extends AbstractSapiEmitter
      *
      * @param int $maxBufferLength
      *
-     * @return self
+     * @return void
      */
-    public function setMaxBufferLength(int $maxBufferLength): self
+    public function setMaxBufferLength(int $maxBufferLength): void
     {
         $this->maxBufferLength = $maxBufferLength;
-
-        return $this;
     }
 
     /**
