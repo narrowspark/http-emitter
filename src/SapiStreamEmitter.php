@@ -18,9 +18,9 @@ class SapiStreamEmitter extends AbstractSapiEmitter
      *
      * @param int $maxBufferLength
      *
-     * @return \Narrowspark\HttpEmitter\EmitterInterface
+     * @return self
      */
-    public function setMaxBufferLength(int $maxBufferLength): EmitterInterface
+    public function setMaxBufferLength(int $maxBufferLength): self
     {
         $this->maxBufferLength = $maxBufferLength;
 
