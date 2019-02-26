@@ -32,7 +32,7 @@
     "require-dev": {
         "narrowspark/coding-standard": "^1.4.0",
         "phpunit/phpunit": "^7.0",
-        "zendframework/zend-diactoros": "^1.7.0"
+        "zendframework/zend-diactoros": "^2.1.1"
     },
     "config": {
         "optimize-autoloader": true,
