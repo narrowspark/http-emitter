@@ -36,7 +36,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
     public function testEmitCallbackStreamResponse(): void
     {
-        $stream = new CallbackStream(static function () {
+        $stream = new CallbackStream(function () {
             return 'it works';
         });
 
@@ -126,7 +126,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             $contents,
             $size,
             $startPosition,
-            static function ($bufferLength) use (&$peakBufferLength): void {
+            function ($bufferLength) use (&$peakBufferLength): void {
                 if ($bufferLength > $peakBufferLength) {
                     $peakBufferLength = $bufferLength;
                 }
@@ -146,7 +146,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         $emittedContents = \ob_get_clean();
 
         if ($seekable) {
-            $rewindPredictionClosure = static function () use (&$rewindCalled): void {
+            $rewindPredictionClosure = function () use (&$rewindCalled): void {
                 $rewindCalled = true;
             };
 
@@ -164,7 +164,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             $stream->eof()->shouldBeCalled();
             $stream->getContents()->shouldNotBeCalled();
         } else {
-            $fullContentsPredictionClosure = static function () use (&$fullContentsCalled): void {
+            $fullContentsPredictionClosure = function () use (&$fullContentsCalled): void {
                 $fullContentsCalled = true;
             };
 
@@ -276,7 +276,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             $contents,
             $size,
             $startPosition,
-            static function ($bufferLength) use (&$peakBufferLength): void {
+            function ($bufferLength) use (&$peakBufferLength): void {
                 if ($bufferLength > $peakBufferLength) {
                     $peakBufferLength = $bufferLength;
                 }
@@ -298,7 +298,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         $stream->rewind()->shouldNotBeCalled();
 
         if ($seekable) {
-            $seekPredictionClosure = static function () use (&$seekCalled): void {
+            $seekPredictionClosure = function () use (&$seekCalled): void {
                 $seekCalled = true;
             };
 
@@ -395,12 +395,12 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             }
         }
 
-        $closureTrackMemoryUsage = static function () use (&$peakMemoryUsage): void {
+        $closureTrackMemoryUsage = function () use (&$peakMemoryUsage): void {
             $peakMemoryUsage = \max($peakMemoryUsage, \memory_get_usage());
         };
 
         $stream = $this->setUpStreamProphecy(
-            static function ($position, $length = null) use (&$sizeBytes) {
+            function ($position, $length = null) use (&$sizeBytes) {
                 if (! $length) {
                     $length = $sizeBytes - $position;
                 }
@@ -409,7 +409,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             },
             $sizeBytes,
             $position,
-            static function ($bufferLength) use (&$peakBufferLength): void {
+            function ($bufferLength) use (&$peakBufferLength): void {
                 if ($bufferLength > $peakBufferLength) {
                     $peakBufferLength = $bufferLength;
                 }
@@ -427,7 +427,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         }
 
         \ob_start(
-            static function () use (&$closureTrackMemoryUsage) {
+            function () use (&$closureTrackMemoryUsage) {
                 $closureTrackMemoryUsage();
 
                 return '';
@@ -565,7 +565,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
     public function testContentRangeUnseekableBody(): void
     {
-        $body = new CallbackStream(static function () {
+        $body = new CallbackStream(function () {
             return 'Hello world';
         });
         $response = (new Response())
@@ -598,7 +598,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
         $stream = $this->prophesize(StreamInterface::class);
 
-        $stream->__toString()->will(static function () use ($contents, $size, &$position) {
+        $stream->__toString()->will(function () use ($contents, $size, &$position) {
             if (\is_callable($contents)) {
                 $data = $contents(0);
             } else {
@@ -612,15 +612,15 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
         $stream->getSize()->willReturn($size);
 
-        $stream->tell()->will(static function () use (&$position) {
+        $stream->tell()->will(function () use (&$position) {
             return $position;
         });
 
-        $stream->eof()->will(static function () use ($size, &$position) {
+        $stream->eof()->will(function () use ($size, &$position) {
             return $position >= $size;
         });
 
-        $stream->seek(Argument::type('integer'), Argument::any())->will(static function ($args) use ($size, &$position) {
+        $stream->seek(Argument::type('integer'), Argument::any())->will(function ($args) use ($size, &$position) {
             if ($args[0] < $size) {
                 $position = $args[0];
 
@@ -630,14 +630,14 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             return false;
         });
 
-        $stream->rewind()->will(static function () use (&$position) {
+        $stream->rewind()->will(function () use (&$position) {
             $position = 0;
 
             return true;
         });
 
         $stream->read(Argument::type('integer'))
-            ->will(static function ($args) use ($contents, &$position, &$trackPeakBufferLength) {
+            ->will(function ($args) use ($contents, &$position, &$trackPeakBufferLength) {
                 if (\is_callable($contents)) {
                     $data = $contents($position, $args[0]);
                 } else {
@@ -653,7 +653,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
                 return $data;
             });
 
-        $stream->getContents()->will(static function () use ($contents, &$position) {
+        $stream->getContents()->will(function () use ($contents, &$position) {
             if (\is_callable($contents)) {
                 $remainingContents = $contents($position);
             } else {
