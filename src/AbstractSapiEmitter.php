@@ -106,7 +106,7 @@ abstract class AbstractSapiEmitter
             foreach ($values as $value) {
                 header(
                     \sprintf(
-                    '%s: %s',
+                        '%s: %s',
                         $name,
                         $value
                     ),

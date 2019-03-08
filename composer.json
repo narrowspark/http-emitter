@@ -20,17 +20,15 @@
     ],
     "require": {
         "php": "^7.1",
-        "psr/http-message": "^1.0",
-        "symfony/polyfill-mbstring": "^1.8.0"
+        "psr/http-message": "^1.0"
     },
     "provide": {
-        "psr/container-implementation": "^1.0",
         "psr/http-message-implementation": "^1.0"
     },
     "require-dev": {
         "narrowspark/coding-standard": "^1.4.0",
         "phpunit/phpunit": "^7.0",
-        "zendframework/zend-diactoros": "^1.7.0"
+        "zendframework/zend-diactoros": "^1.8.0"
     },
     "config": {
         "optimize-autoloader": true,

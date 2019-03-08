@@ -8,6 +8,7 @@ $config = new Config(null, [
             'header',
         ],
     ],
+    'static_lambda' => false,
 ]);
 $config->getFinder()
     ->files()

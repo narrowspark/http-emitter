@@ -12,4 +12,3 @@ parameters:
         - %currentWorkingDirectory%/src/
 
     ignoreErrors:
-        - '#Swoole\\Http\\Response#'
