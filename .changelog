@@ -7,7 +7,7 @@ return [
     (new ChangelogConfig(
         'narrowspark',
         'http-emitter',
-        '0.7.0',
+        'v0.8.0',
         ['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security']
     ))
 ];
