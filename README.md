@@ -13,9 +13,6 @@ The available emitter implementations are:
     - `Narrowspark\HttpEmitter\SapiEmitter`
     - `Narrowspark\HttpEmitter\SapiStreamEmitter`.
 > **Note:** Each use the native PHP functions `header()` and ```echo``` in order to emit the response.
-    
-    - `Narrowspark\HttpEmitter\SwooleEmitter`
-> **Note:** [Swoole](https://www.swoole.co.uk/) is an async programming Framework for PHP that can be used to create high performance HTTP server applications, e.g. web APIs.
 
 If you are using a non-SAPI implementation, you will need to create your own ```Narrowspark\HttpEmitter\EmitterInterface``` implementation.
 
@@ -46,31 +43,6 @@ $response->getBody()->write("some content\n");
 
 $emitter = new SapiEmitter();
 $emitter->emit($response);
-```
-
-How to use the SwooleEmitter:
-
-```php
-<?php
-
-use Narrowspark\HttpEmitter\SwooleEmitter;
-use Swoole\Http\Server;
-
-$http = new Server('127.0.0.1', 9501);
- 
-$http->on('start', function ($server) {
-    echo 'Swoole http server is started at http://127.0.0.1:9501';
-});
- 
-$http->on("request", function ($request, $response) use ($app) {
-    $psr7Response = new \Response();
-    $psr7Response->getBody()->write("some content\n");
- 
-    $emitter = new SwooleEmitter($response);
-    $emitter->emit($psr7Response);
-});
- 
-$http->start();
 ```
 
 If you missing the ```Content-Length``` header you can use the `\Narrowspark\HttpEmitter\Util\Util::injectContentLength` static method.
