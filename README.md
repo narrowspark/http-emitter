@@ -14,8 +14,6 @@ The available emitter implementations are:
     - `Narrowspark\HttpEmitter\SapiStreamEmitter`.
 > **Note:** Each use the native PHP functions `header()` and ```echo``` in order to emit the response.
 
-If you are using a non-SAPI implementation, you will need to create your own ```Narrowspark\HttpEmitter\EmitterInterface``` implementation.
-
 > Note: If headers have been sent, or the output buffer exists and has a non-zero length, the emitters raise an exception, as mixed PSR-7 / output buffer content creates a blocking issue.
 >
 > If you are emitting content via `echo`, `print`, `var_dump`, etc., or not catching PHP errors / exceptions, you will need to either fix your application to always work with a PSR-7 response.
