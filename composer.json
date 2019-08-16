@@ -28,7 +28,7 @@
     "require-dev": {
         "narrowspark/coding-standard": "^1.4.0",
         "phpunit/phpunit": "^7.0",
-        "zendframework/zend-diactoros": "^1.8.0"
+        "zendframework/zend-diactoros": "^1.8.0 || ^2.0.0"
     },
     "config": {
         "optimize-autoloader": true,
