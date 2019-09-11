@@ -1,5 +1,16 @@
 <?php
+
 declare(strict_types=1);
+
+/**
+ * This file is part of Narrowspark.
+ *
+ * (c) Daniel Bannert <d.bannert@anolilab.de>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Narrowspark\HttpEmitter\Tests;
 
 /*
@@ -24,6 +35,8 @@ use Zend\Diactoros\Response\TextResponse;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class SapiStreamEmitterTest extends AbstractEmitterTest
 {
@@ -47,7 +60,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
         $this->emitter->emit($response);
 
-        $this->assertEquals('it works', \ob_get_clean());
+        self::assertEquals('it works', \ob_get_clean());
     }
 
     public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown(): void
@@ -69,7 +82,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         \ob_end_clean();
 
         foreach (HeaderStack::stack() as $header) {
-            $this->assertNotContains('Content-Length:', $header['header']);
+            self::assertStringNotContainsStringIgnoringCase('Content-Length:', $header['header']);
         }
     }
 
@@ -116,10 +129,10 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
      */
     public function testEmitStreamResponse(bool $seekable, bool $readable, string $contents, int $maxBufferLength): void
     {
-        $size               = \strlen($contents);
-        $startPosition      = 0;
-        $peakBufferLength   = 0;
-        $rewindCalled       = false;
+        $size = \strlen($contents);
+        $startPosition = 0;
+        $peakBufferLength = 0;
+        $rewindCalled = false;
         $fullContentsCalled = false;
 
         $stream = $this->setUpStreamProphecy(
@@ -181,10 +194,10 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
         $stream->checkProphecyMethodsPredictions();
 
-        $this->assertEquals($seekable, $rewindCalled);
-        $this->assertEquals(! $readable, $fullContentsCalled);
-        $this->assertEquals($contents, $emittedContents);
-        $this->assertLessThanOrEqual($maxBufferLength, $peakBufferLength);
+        self::assertEquals($seekable, $rewindCalled);
+        self::assertEquals(! $readable, $fullContentsCalled);
+        self::assertEquals($contents, $emittedContents);
+        self::assertLessThanOrEqual($maxBufferLength, $peakBufferLength);
     }
 
     /**
@@ -260,8 +273,8 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         string $contents,
         int $maxBufferLength
     ): void {
-        [$unit, $first, $last, $length]     = $range;
-        $size                               = \strlen($contents);
+        [$unit, $first, $last, $length] = $range;
+        $size = \strlen($contents);
 
         if ($readable && ! $seekable) {
             $startPosition = $first;
@@ -270,7 +283,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         }
 
         $peakBufferLength = 0;
-        $seekCalled       = false;
+        $seekCalled = false;
 
         $stream = $this->setUpStreamProphecy(
             $contents,
@@ -322,9 +335,9 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
         $stream->checkProphecyMethodsPredictions();
 
-        $this->assertEquals($seekable, $seekCalled);
-        $this->assertEquals(\substr($contents, $first, $last - $first + 1), $emittedContents);
-        $this->assertLessThanOrEqual($maxBufferLength, $peakBufferLength);
+        self::assertEquals($seekable, $seekCalled);
+        self::assertEquals(\substr($contents, $first, $last - $first + 1), $emittedContents);
+        self::assertLessThanOrEqual($maxBufferLength, $peakBufferLength);
     }
 
     /**
@@ -379,16 +392,16 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         ?array $rangeBlocks,
         int $maxBufferLength
     ): void {
-        $sizeBytes             = $maxBufferLength * $sizeBlocks;
+        $sizeBytes = $maxBufferLength * $sizeBlocks;
         $maxAllowedMemoryUsage = $maxBufferLength * $maxAllowedBlocks;
-        $peakBufferLength      = 0;
-        $peakMemoryUsage       = 0;
+        $peakBufferLength = 0;
+        $peakMemoryUsage = 0;
 
         $position = 0;
 
         if ($rangeBlocks) {
-            $first    = $maxBufferLength * $rangeBlocks[0];
-            $last     = ($maxBufferLength * $rangeBlocks[1]) + $maxBufferLength - 1;
+            $first = $maxBufferLength * $rangeBlocks[0];
+            $last = ($maxBufferLength * $rangeBlocks[1]) + $maxBufferLength - 1;
 
             if ($readable && ! $seekable) {
                 $position = $first;
@@ -450,8 +463,8 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
         $localMemoryUsage = \memory_get_usage();
 
-        $this->assertLessThanOrEqual($maxBufferLength, $peakBufferLength);
-        $this->assertLessThanOrEqual($maxAllowedMemoryUsage, $peakMemoryUsage - $localMemoryUsage);
+        self::assertLessThanOrEqual($maxBufferLength, $peakBufferLength);
+        self::assertLessThanOrEqual($maxAllowedMemoryUsage, $peakMemoryUsage - $localMemoryUsage);
     }
 
     public function testEmitEmptyResponse(): void
@@ -463,8 +476,8 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
         $this->emitter->emit($response);
 
-        $this->assertEmpty($response->getHeaderLine('content-type'));
-        $this->assertEmpty(\ob_get_clean());
+        self::assertEmpty($response->getHeaderLine('content-type'));
+        self::assertEmpty(\ob_get_clean());
     }
 
     public function testEmitHtmlResponse(): void
@@ -481,8 +494,8 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
         \ob_start();
         $this->emitter->emit($response);
-        $this->assertEquals('text/html; charset=utf-8', $response->getHeaderLine('content-type'));
-        $this->assertEquals($contents, \ob_get_clean());
+        self::assertEquals('text/html; charset=utf-8', $response->getHeaderLine('content-type'));
+        self::assertEquals($contents, \ob_get_clean());
     }
 
     /**
@@ -515,8 +528,8 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
         $this->emitter->emit($response);
 
-        $this->assertEquals('application/json', $response->getHeaderLine('content-type'));
-        $this->assertEquals(\json_encode($contents), \ob_get_clean());
+        self::assertEquals('application/json', $response->getHeaderLine('content-type'));
+        self::assertEquals(\json_encode($contents), \ob_get_clean());
     }
 
     public function testEmitTextResponse(): void
@@ -528,8 +541,8 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
         \ob_start();
         $this->emitter->emit($response);
-        $this->assertEquals('text/plain; charset=utf-8', $response->getHeaderLine('content-type'));
-        $this->assertEquals($contents, \ob_get_clean());
+        self::assertEquals('text/plain; charset=utf-8', $response->getHeaderLine('content-type'));
+        self::assertEquals($contents, \ob_get_clean());
     }
 
     /**
@@ -560,7 +573,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
         \ob_start();
         $this->emitter->emit($response);
-        $this->assertEquals($expected, \ob_get_clean());
+        self::assertEquals($expected, \ob_get_clean());
     }
 
     public function testContentRangeUnseekableBody(): void
@@ -574,7 +587,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
         \ob_start();
         $this->emitter->emit($response);
-        $this->assertEquals('lo w', \ob_get_clean());
+        self::assertEquals('lo w', \ob_get_clean());
     }
 
     /**

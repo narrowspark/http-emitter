@@ -9,12 +9,11 @@ env:
 
 cache:
   directories:
-    - $HOME/.composer/cache/files
+    - $HOME/.composer/cache
     - $HOME/.php-cs-fixer
 
 before_install:
   - stty cols 120
-  - mkdir -p ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d
   - chmod a+x ./build/travis/configure_php.sh
   - ./build/travis/configure_php.sh
 
@@ -23,12 +22,21 @@ install:
   - $COMPOSER_UP
 
 jobs:
+  allow_failures:
+    - php: nightly
+    - php: 7.4snapshot
   include:
     - stage: Test
-      php: 7.1
+      php: 7.2
       env: REMOVE_XDEBUG=true
     - stage: Test
-      php: 7.2
+      php: 7.3
+      env: REMOVE_XDEBUG=true
+    - stage: Test
+      php: 7.4snapshot
+      env: REMOVE_XDEBUG=true
+    - stage: Test
+      php: nightly
       env: REMOVE_XDEBUG=true
 
     - stage: Coding standard
@@ -40,7 +48,7 @@ jobs:
       php: 7.2
       env: REMOVE_XDEBUG=false
       script:
-        - ./vendor/bin/phpstan analyse -c phpstan.neon -l 7 src
+        - ./vendor/bin/phpstan analyse -c phpstan.neon src --memory-limit=-1
 
     - stage: Coverage
       php: 7.2

@@ -1,5 +1,16 @@
 <?php
+
 declare(strict_types=1);
+
+/**
+ * This file is part of Narrowspark.
+ *
+ * (c) Daniel Bannert <d.bannert@anolilab.de>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Narrowspark\HttpEmitter\Tests;
 
 use Narrowspark\HttpEmitter\SapiEmitter;
@@ -11,6 +22,8 @@ use Zend\Diactoros\Response;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class UtilTest extends TestCase
 {
@@ -34,9 +47,9 @@ final class UtilTest extends TestCase
         $this->emitter->emit($response);
         \ob_end_clean();
 
-        $this->assertTrue(HeaderStack::has('HTTP/1.1 200 OK'));
-        $this->assertTrue(HeaderStack::has('Content-Type: text/plain'));
-        $this->assertTrue(HeaderStack::has('Content-Length: 8'));
+        self::assertTrue(HeaderStack::has('HTTP/1.1 200 OK'));
+        self::assertTrue(HeaderStack::has('Content-Type: text/plain'));
+        self::assertTrue(HeaderStack::has('Content-Length: 8'));
     }
 
     public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown(): void
@@ -56,7 +69,7 @@ final class UtilTest extends TestCase
         \ob_end_clean();
 
         foreach (HeaderStack::stack() as $header) {
-            $this->assertNotContains('Content-Length:', $header['header']);
+            self::assertStringNotContainsStringIgnoringCase('Content-Length:', $header['header']);
         }
     }
 
@@ -70,11 +83,11 @@ final class UtilTest extends TestCase
         \ob_start();
         $this->emitter->emit($response);
 
-        $this->assertSame(2, \ob_get_level());
+        self::assertSame(2, \ob_get_level());
         // flush
         Util::closeOutputBuffers(1, true);
 
-        $this->assertSame(1, \ob_get_level());
+        self::assertSame(1, \ob_get_level());
     }
 
     public function testCloseOutputBuffersWithClean(): void
@@ -92,6 +105,6 @@ final class UtilTest extends TestCase
         // clear
         Util::closeOutputBuffers(1, false);
 
-        $this->assertNotSame(\ob_get_contents(), $content);
+        self::assertNotSame(\ob_get_contents(), $content);
     }
 }
