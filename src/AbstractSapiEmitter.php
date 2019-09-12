@@ -1,9 +1,20 @@
 <?php
+
 declare(strict_types=1);
+
+/**
+ * This file is part of Narrowspark.
+ *
+ * (c) Daniel Bannert <d.bannert@anolilab.de>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Narrowspark\HttpEmitter;
 
+use Narrowspark\HttpEmitter\Contract\RuntimeException;
 use Psr\Http\Message\ResponseInterface;
-use RuntimeException;
 
 abstract class AbstractSapiEmitter
 {
@@ -29,7 +40,7 @@ abstract class AbstractSapiEmitter
     /**
      * Assert either that no headers been sent or the output buffer contains no content.
      *
-     * @throws \RuntimeException
+     * @throws \Narrowspark\HttpEmitter\Contract\RuntimeException
      *
      * @return void
      */
@@ -39,10 +50,10 @@ abstract class AbstractSapiEmitter
 
         if (headers_sent($file, $line)) {
             throw new RuntimeException(\sprintf(
-                'Unable to emit response: Headers already sent in file %s on line %s. ' .
-                'This happens if echo, print, printf, print_r, var_dump, var_export or similar statement that writes to the output buffer are used.',
+                'Unable to emit response: Headers already sent in file %s on line %s. '
+                . 'This happens if echo, print, printf, print_r, var_dump, var_export or similar statement that writes to the output buffer are used.',
                 $file,
-                $line
+                (string) $line
             ));
         }
 
@@ -100,7 +111,7 @@ abstract class AbstractSapiEmitter
         $statusCode = $response->getStatusCode();
 
         foreach ($response->getHeaders() as $header => $values) {
-            $name  = $this->toWordCase($header);
+            $name = $this->toWordCase($header);
             $first = $name !== 'Set-Cookie';
 
             foreach ($values as $value) {

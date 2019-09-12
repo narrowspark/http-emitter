@@ -1,5 +1,16 @@
 <?php
+
 declare(strict_types=1);
+
+/**
+ * This file is part of Narrowspark.
+ *
+ * (c) Daniel Bannert <d.bannert@anolilab.de>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Narrowspark\HttpEmitter\Tests;
 
 /*
@@ -15,6 +26,8 @@ use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
 
 /**
  * @internal
+ *
+ * @small
  */
 final class SapiEmitterTest extends AbstractEmitterTest
 {

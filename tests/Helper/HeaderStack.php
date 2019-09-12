@@ -1,12 +1,34 @@
 <?php
+
 declare(strict_types=1);
+
+/**
+ * This file is part of Narrowspark.
+ *
+ * (c) Daniel Bannert <d.bannert@anolilab.de>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Narrowspark\HttpEmitter\Tests\Helper;
 
-class HeaderStack
+final class HeaderStack
 {
     /**
-     * @var string[][]
+     * Check if headers was sent.
+     *
+     * @var bool
      */
+    public static $headersSent = false;
+
+    /** @var null|string */
+    public static $headersFile;
+
+    /** @var null|int */
+    public static $headersLine;
+
+    /** @var string[][] */
     private static $data = [];
 
     /**

@@ -1,5 +1,16 @@
 <?php
+
 declare(strict_types=1);
+
+/**
+ * This file is part of Narrowspark.
+ *
+ * (c) Daniel Bannert <d.bannert@anolilab.de>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Narrowspark\HttpEmitter;
 
 use Psr\Http\Message\ResponseInterface;
@@ -26,8 +37,8 @@ final class Util
     {
         // PSR-7 indicates int OR null for the stream size; for null values,
         // we will not auto-inject the Content-Length.
-        if (! $response->hasHeader('Content-Length') &&
-            $response->getBody()->getSize() !== null
+        if (! $response->hasHeader('Content-Length')
+            && $response->getBody()->getSize() !== null
         ) {
             $response = $response->withHeader('Content-Length', (string) $response->getBody()->getSize());
         }
@@ -48,8 +59,8 @@ final class Util
     public static function closeOutputBuffers(int $maxBufferLevel, bool $flush): void
     {
         $status = \ob_get_status(true);
-        $level  = \count($status);
-        $flags  = \PHP_OUTPUT_HANDLER_REMOVABLE | ($flush ? \PHP_OUTPUT_HANDLER_FLUSHABLE : \PHP_OUTPUT_HANDLER_CLEANABLE);
+        $level = \count($status);
+        $flags = \PHP_OUTPUT_HANDLER_REMOVABLE | ($flush ? \PHP_OUTPUT_HANDLER_FLUSHABLE : \PHP_OUTPUT_HANDLER_CLEANABLE);
 
         while ($level-- > $maxBufferLevel && (bool) ($s = $status[$level]) && ($s['del'] ?? ! isset($s['flags']) || $flags === ($s['flags'] & $flags))) {
             if ($flush) {

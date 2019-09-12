@@ -6,9 +6,11 @@ includes:
     - vendor/phpstan/phpstan-phpunit/rules.neon
     - vendor/phpstan/phpstan-strict-rules/rules.neon
 #    - vendor/thecodingmachine/phpstan-strict-rules/phpstan-strict-rules.neon
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
 
 parameters:
-    autoload_directories:
-        - %currentWorkingDirectory%/src/
+    level: max
+    inferPrivatePropertyTypeFromConstructor: true
 
-    ignoreErrors:
+    autoload_directories:
+        - %currentWorkingDirectory%/src

@@ -1,10 +1,21 @@
 <?php
+
 declare(strict_types=1);
+
+/**
+ * This file is part of Narrowspark.
+ *
+ * (c) Daniel Bannert <d.bannert@anolilab.de>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Narrowspark\HttpEmitter;
 
 use Psr\Http\Message\ResponseInterface;
 
-class SapiStreamEmitter extends AbstractSapiEmitter
+final class SapiStreamEmitter extends AbstractSapiEmitter
 {
     /**
      * Maximum output buffering size for each iteration.
@@ -72,6 +83,10 @@ class SapiStreamEmitter extends AbstractSapiEmitter
 
         while (! $body->eof()) {
             echo $body->read($maxBufferLength);
+
+            if (\connection_status() !== \CONNECTION_NORMAL) {
+                break;
+            }
         }
     }
 
@@ -104,10 +119,14 @@ class SapiStreamEmitter extends AbstractSapiEmitter
         $remaining = $length;
 
         while ($remaining >= $maxBufferLength && ! $body->eof()) {
-            $contents   = $body->read($maxBufferLength);
+            $contents = $body->read($maxBufferLength);
             $remaining -= \strlen($contents);
 
             echo $contents;
+
+            if (\connection_status() !== \CONNECTION_NORMAL) {
+                break;
+            }
         }
 
         if ($remaining > 0 && ! $body->eof()) {

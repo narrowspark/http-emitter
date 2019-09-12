@@ -4,6 +4,7 @@
 
 .php_cs.cache
 coverage.xml
+.phpunit.result.cache
 
 /build/logs
 /vendor
