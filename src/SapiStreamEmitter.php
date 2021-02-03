@@ -3,17 +3,19 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark.
+ * Copyright (c) 2017-2021 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/php-library-template
  */
 
 namespace Narrowspark\HttpEmitter;
 
 use Psr\Http\Message\ResponseInterface;
+use function Safe\preg_match;
+use function Safe\substr;
 
 final class SapiStreamEmitter extends AbstractSapiEmitter
 {
@@ -26,10 +28,6 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
 
     /**
      * Set the maximum output buffering level.
-     *
-     * @param int $maxBufferLength
-     *
-     * @return self
      */
     public function setMaxBufferLength(int $maxBufferLength): self
     {
@@ -50,6 +48,8 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
         // Set the status _after_ the headers, because of PHP's "helpful" behavior with location headers.
         $this->emitStatusLine($response);
 
+        flush();
+
         $range = $this->parseContentRange($response->getHeaderLine('Content-Range'));
 
         if (\is_array($range) && $range[0] === 'bytes') {
@@ -63,9 +63,6 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
 
     /**
      * Sends the message body of the response.
-     *
-     * @param \Psr\Http\Message\ResponseInterface $response
-     * @param int                                 $maxBufferLength
      */
     private function emitBody(ResponseInterface $response, int $maxBufferLength): void
     {
@@ -84,7 +81,7 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
         while (! $body->eof()) {
             echo $body->read($maxBufferLength);
 
-            if (\connection_status() !== \CONNECTION_NORMAL) {
+            if (connection_status() !== \CONNECTION_NORMAL) {
                 break;
             }
         }
@@ -93,9 +90,7 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
     /**
      * Emit a range of the message body.
      *
-     * @param array                               $range
-     * @param \Psr\Http\Message\ResponseInterface $response
-     * @param int                                 $maxBufferLength
+     * @psalm-param array{0: mixed, 1: int, 2: int, 3: '*'|int} $range
      */
     private function emitBodyRange(array $range, ResponseInterface $response, int $maxBufferLength): void
     {
@@ -111,7 +106,7 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
         }
 
         if (! $body->isReadable()) {
-            echo \substr($body->getContents(), $first, (int) $length);
+            echo substr($body->getContents(), $first, $length);
 
             return;
         }
@@ -124,13 +119,13 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
 
             echo $contents;
 
-            if (\connection_status() !== \CONNECTION_NORMAL) {
+            if (connection_status() !== \CONNECTION_NORMAL) {
                 break;
             }
         }
 
         if ($remaining > 0 && ! $body->eof()) {
-            echo $body->read((int) $remaining);
+            echo $body->read($remaining);
         }
     }
 
@@ -140,12 +135,12 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
      *
      * @param string $header
      *
-     * @return null|array [unit, first, last, length]; returns false if no
-     *                    content range or an invalid content range is provided
+     * @return null|array{0: mixed, 1: int, 2: int, 3: '*'|int} [unit, first, last, length]; returns false if no
+     *                       content range or an invalid content range is provided
      */
     private function parseContentRange($header): ?array
     {
-        if (\preg_match('/(?P<unit>[\w]+)\s+(?P<first>\d+)-(?P<last>\d+)\/(?P<length>\d+|\*)/', $header, $matches) === 1) {
+        if (preg_match('/(?P<unit>[\w]+)\s+(?P<first>\d+)-(?P<last>\d+)\/(?P<length>\d+|\*)/', $header, $matches) === 1) {
             return [
                 $matches['unit'],
                 (int) $matches['first'],

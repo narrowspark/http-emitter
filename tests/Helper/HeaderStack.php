@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark.
+ * Copyright (c) 2017-2021 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/php-library-template
  */
 
 namespace Narrowspark\HttpEmitter\Tests\Helper;
@@ -28,13 +28,13 @@ final class HeaderStack
     /** @var null|int */
     public static $headersLine;
 
-    /** @var string[][] */
+    /**
+     * @psalm-var array<array-key, array<string, bool|int|string|null>>
+     */
     private static $data = [];
 
     /**
      * Reset state.
-     *
-     * @return void
      */
     public static function reset(): void
     {
@@ -44,7 +44,7 @@ final class HeaderStack
     /**
      * Push a header on the stack.
      *
-     * @param string[] $header
+     * @psalm-param array<string, bool|int|string|null> $header
      */
     public static function push(array $header): void
     {
@@ -54,7 +54,7 @@ final class HeaderStack
     /**
      * Return the current header stack.
      *
-     * @return string[][]
+     * @psalm-return array<array-key, array<string, bool|int|string|null>>
      */
     public static function stack(): array
     {
@@ -65,8 +65,6 @@ final class HeaderStack
      * Verify if there's a header line on the stack.
      *
      * @param string $header
-     *
-     * @return bool
      */
     public static function has($header): bool
     {

@@ -1,0 +1,58 @@
+{
+  "name": "php-library-template",
+  "version": "0.0.0-development",
+  "private": true,
+  "scripts": {
+    "lint": "textlint ./.build/ISSUE_TEMPLATE/** ./src/** ./docs/** ./README.md ./UPGRADE.md --dry-run",
+    "lint:fix": "textlint ./.build/ISSUE_TEMPLATE/** ./src/** ./docs/** ./README.md ./UPGRADE.md --fix",
+    "prepublishOnly": "if [ \"$CI\" = '' ]; then node -p 'JSON.parse(process.env.npm_package_config_manualPublishMessage)'; exit 1; fi"
+  },
+  "husky": {
+    "skipCI": true,
+    "hooks": {
+      "pre-commit": "npm run lint",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    },
+    "manualPublishMessage": "This repository is configured to use semantic-release for its releases. Please do not release manually.\n"
+  },
+  "dependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
+    "@commitlint/core": "^11.0.0",
+    "@textlint-rule/textlint-rule-no-invalid-control-character": "^1.2.0",
+    "@textlint-rule/textlint-rule-no-unmatched-pair": "^1.0.7",
+    "@textlint-rule/textlint-rule-preset-google": "^0.1.2",
+    "conventional-changelog-conventionalcommits": "^4.5.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^5.0.8",
+    "textlint": "^11.8.1",
+    "textlint-rule-abbr-within-parentheses": "^1.0.2",
+    "textlint-rule-alex": "^3.0.0",
+    "textlint-rule-apostrophe": "^2.0.0",
+    "textlint-rule-common-misspellings": "^1.0.1",
+    "textlint-rule-diacritics": "1.0.0",
+    "textlint-rule-en-capitalization": "^2.0.3",
+    "textlint-rule-footnote-order": "^1.0.3",
+    "textlint-rule-helper": "^2.1.1",
+    "textlint-rule-no-dead-link": "^4.7.0",
+    "textlint-rule-no-empty-section": "^1.1.0",
+    "textlint-rule-no-todo": "^2.0.1",
+    "textlint-rule-terminology": "^2.1.5",
+    "textlint-rule-write-good": "^1.6.2",
+    "write-good": "^1.0.4"
+  },
+  "devDependencies": {
+    "minimist": ">=1.2.5",
+    "yargs-parser": ">=20.2.4"
+  }
+}

@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark.
+ * Copyright (c) 2017-2021 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/php-library-template
  */
 
 namespace Narrowspark\HttpEmitter\Tests;
@@ -21,13 +21,17 @@ namespace Narrowspark\HttpEmitter\Tests;
  * @license   https://github.com/zendframework/zend-diactoros/blob/master/LICENSE.md New BSD License
  */
 
+use Laminas\Diactoros\Response;
 use Narrowspark\HttpEmitter\SapiEmitter;
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
+use Psr\Http\Message\StreamInterface;
+use function Safe\ob_end_clean;
 
 /**
  * @internal
  *
- * @small
+ * @medium
+ * @covers \Narrowspark\HttpEmitter\SapiEmitter
  */
 final class SapiEmitterTest extends AbstractEmitterTest
 {
@@ -36,5 +40,24 @@ final class SapiEmitterTest extends AbstractEmitterTest
         HeaderStack::reset();
 
         $this->emitter = new SapiEmitter();
+    }
+
+    public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown(): void
+    {
+        $stream = $this->createMock(StreamInterface::class);
+        $stream->method('__toString')->willReturn('Content!');
+        $stream->method('getSize')->willReturn(null);
+
+        $response = (new Response())
+            ->withStatus(200)
+            ->withBody($stream);
+
+        ob_start();
+        $this->emitter->emit($response);
+        ob_end_clean();
+
+        foreach (HeaderStack::stack() as $header) {
+            self::assertStringNotContainsStringIgnoringCase('Content-Length:', $header['header']);
+        }
     }
 }

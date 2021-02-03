@@ -3,17 +3,19 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark.
+ * Copyright (c) 2017-2021 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/php-library-template
  */
 
 namespace Narrowspark\HttpEmitter;
 
 use Psr\Http\Message\ResponseInterface;
+use function Safe\ob_end_clean;
+use function Safe\ob_end_flush;
 
 final class Util
 {
@@ -28,10 +30,6 @@ final class Util
 
     /**
      * Inject the Content-Length header if is not already present.
-     *
-     * @param \Psr\Http\Message\ResponseInterface $response
-     *
-     * @return \Psr\Http\Message\ResponseInterface
      */
     public static function injectContentLength(ResponseInterface $response): ResponseInterface
     {
@@ -53,20 +51,18 @@ final class Util
      *
      * @param int  $maxBufferLevel The target output buffering level
      * @param bool $flush          Whether to flush or clean the buffers
-     *
-     * @return void
      */
     public static function closeOutputBuffers(int $maxBufferLevel, bool $flush): void
     {
-        $status = \ob_get_status(true);
+        $status = ob_get_status(true);
         $level = \count($status);
         $flags = \PHP_OUTPUT_HANDLER_REMOVABLE | ($flush ? \PHP_OUTPUT_HANDLER_FLUSHABLE : \PHP_OUTPUT_HANDLER_CLEANABLE);
 
         while ($level-- > $maxBufferLevel && (bool) ($s = $status[$level]) && ($s['del'] ?? ! isset($s['flags']) || $flags === ($s['flags'] & $flags))) {
             if ($flush) {
-                \ob_end_flush();
+                ob_end_flush();
             } else {
-                \ob_end_clean();
+                ob_end_clean();
             }
         }
     }

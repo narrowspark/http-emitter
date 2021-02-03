@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+    bootstrap="vendor/autoload.php"
+    cacheResultFile=".build/phpunit/phpunit.cache"
+    colors="true"
+    verbose="true"
+    failOnRisky="true"
+    failOnWarning="true"
+    columns="max"
+    executionOrder="random"
+    beStrictAboutResourceUsageDuringSmallTests="true"
+    beStrictAboutChangesToGlobalState="true"
+    beStrictAboutOutputDuringTests="true"
+    beStrictAboutTodoAnnotatedTests="true"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+>
+    <php>
+        <ini name="error_reporting" value="-1" />
+        <ini name="intl.default_locale" value="en" />
+        <ini name="intl.error_level" value="0" />
+        <ini name="memory_limit" value="-1" />
+    </php>
+
+    <testsuites>
+        <testsuite name="Narrowspark Test Suite">
+            <directory>./tests/</directory>
+            <exclude>node_modules/</exclude>
+            <exclude>vendor/</exclude>
+        </testsuite>
+    </testsuites>
+
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+    </coverage>
+</phpunit>

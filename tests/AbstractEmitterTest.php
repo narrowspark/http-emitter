@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark.
+ * Copyright (c) 2017-2021 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/php-library-template
  */
 
 namespace Narrowspark\HttpEmitter\Tests;
@@ -21,11 +21,11 @@ namespace Narrowspark\HttpEmitter\Tests;
  * @license   https://github.com/zendframework/zend-diactoros/blob/master/LICENSE.md New BSD License
  */
 
+use Laminas\Diactoros\Response;
 use Narrowspark\HttpEmitter\Contract\RuntimeException;
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\StreamInterface;
-use Zend\Diactoros\Response;
+use function Safe\sprintf;
 
 /**
  * @internal
@@ -47,14 +47,14 @@ abstract class AbstractEmitterTest extends TestCase
         HeaderStack::$headersLine = null;
     }
 
-    public function testEmitThrowsSentHeadersException(): void
+    final public function testEmitThrowsSentHeadersException(): void
     {
         HeaderStack::$headersSent = true;
         HeaderStack::$headersFile = 'src/AbstractSapiEmitter.php';
         HeaderStack::$headersLine = 20;
 
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage(\sprintf(
+        $this->expectExceptionMessage(sprintf(
             'Unable to emit response: Headers already sent in file %s on line %s. This happens if echo, print, printf, print_r, var_dump, var_export or similar statement that writes to the output buffer are used.',
             HeaderStack::$headersFile,
             (string) HeaderStack::$headersLine
@@ -63,7 +63,7 @@ abstract class AbstractEmitterTest extends TestCase
         $this->emitter->emit($this->arrangeStatus200AndTypeTextResponse());
     }
 
-    public function testEmitsMessageBody(): void
+    final public function testEmitsMessageBody(): void
     {
         $response = $this->arrangeStatus200AndTypeTextResponse();
         $response->getBody()->write('Content!');
@@ -76,7 +76,7 @@ abstract class AbstractEmitterTest extends TestCase
         self::assertTrue(HeaderStack::has('Content-Type: text/plain'));
     }
 
-    public function testMultipleSetCookieHeadersAreNotReplaced(): void
+    final public function testMultipleSetCookieHeadersAreNotReplaced(): void
     {
         $response = (new Response())
             ->withStatus(200)
@@ -94,7 +94,7 @@ abstract class AbstractEmitterTest extends TestCase
         self::assertSame($expectedStack, HeaderStack::stack());
     }
 
-    public function testDoesNotLetResponseCodeBeOverriddenByPHP(): void
+    final public function testDoesNotLetResponseCodeBeOverriddenByPHP(): void
     {
         $response = (new Response())
             ->withStatus(202)
@@ -112,7 +112,7 @@ abstract class AbstractEmitterTest extends TestCase
         self::assertSame($expectedStack, HeaderStack::stack());
     }
 
-    public function testEmitterRespectLocationHeader(): void
+    final public function testEmitterRespectLocationHeader(): void
     {
         $response = (new Response())
             ->withStatus(200)
@@ -128,26 +128,8 @@ abstract class AbstractEmitterTest extends TestCase
         self::assertSame($expectedStack, HeaderStack::stack());
     }
 
-    public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown(): void
-    {
-        $stream = $this->prophesize(StreamInterface::class);
-        $stream->__toString()->willReturn('Content!');
-        $stream->getSize()->willReturn(null);
-        $response = (new Response())
-            ->withStatus(200)
-            ->withBody($stream->reveal());
-
-        \ob_start();
-        $this->emitter->emit($response);
-        \ob_end_clean();
-
-        foreach (HeaderStack::stack() as $header) {
-            self::assertStringNotContainsStringIgnoringCase('Content-Length:', $header['header']);
-        }
-    }
-
     /**
-     * @return \Psr\Http\Message\MessageInterface|Response
+     * @return \Psr\Http\Message\ResponseFactoryInterface|\Psr\Http\Message\ResponseInterface
      */
     private function arrangeStatus200AndTypeTextResponse()
     {

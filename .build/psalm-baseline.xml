@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="3.12.2@7c7ebd068f8acaba211d4a2c707c4ba90874fa26">
+  <file src="src/AbstractSapiEmitter.php">
+    <MixedArgumentTypeCoercion occurrences="1">
+      <code>$header</code>
+    </MixedArgumentTypeCoercion>
+  </file>
+  <file src="src/SapiStreamEmitter.php">
+    <MixedAssignment occurrences="1">
+      <code>$unit</code>
+    </MixedAssignment>
+    <PossiblyNullArrayAccess occurrences="4">
+      <code>$matches['unit']</code>
+      <code>$matches['first']</code>
+      <code>$matches['last']</code>
+      <code>$matches['length']</code>
+    </PossiblyNullArrayAccess>
+    <PossiblyUnusedMethod occurrences="1">
+      <code>setMaxBufferLength</code>
+    </PossiblyUnusedMethod>
+    <UnusedVariable occurrences="2">
+      <code>$unit</code>
+      <code>$length</code>
+    </UnusedVariable>
+  </file>
+  <file src="src/Util.php">
+    <MixedAssignment occurrences="1">
+      <code>$s</code>
+    </MixedAssignment>
+    <MixedOperand occurrences="1">
+      <code>$s['flags']</code>
+    </MixedOperand>
+    <PossiblyUnusedMethod occurrences="1">
+      <code>injectContentLength</code>
+    </PossiblyUnusedMethod>
+    <UnusedMethod occurrences="1">
+      <code>__construct</code>
+    </UnusedMethod>
+  </file>
+  <file src="tests/AbstractEmitterTest.php">
+    <MixedMethodCall occurrences="1">
+      <code>write</code>
+    </MixedMethodCall>
+    <PossiblyInvalidArgument occurrences="2">
+      <code>$this-&gt;arrangeStatus200AndTypeTextResponse()</code>
+      <code>$response</code>
+    </PossiblyInvalidArgument>
+    <PossiblyUndefinedMethod occurrences="1">
+      <code>getBody</code>
+    </PossiblyUndefinedMethod>
+  </file>
+  <file src="tests/Helper/StreamMock.php">
+    <MixedArgument occurrences="2">
+      <code>$data</code>
+      <code>$remainingContents</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="2">
+      <code>$data</code>
+      <code>$remainingContents</code>
+    </MixedAssignment>
+    <MixedInferredReturnType occurrences="3">
+      <code>string</code>
+      <code>string</code>
+      <code>string</code>
+    </MixedInferredReturnType>
+    <MixedReturnStatement occurrences="3">
+      <code>\is_callable($this-&gt;contents) ? ($this-&gt;contents)(0) : $this-&gt;contents</code>
+      <code>$data</code>
+      <code>$remainingContents</code>
+    </MixedReturnStatement>
+    <UnusedParam occurrences="1">
+      <code>$whence</code>
+    </UnusedParam>
+  </file>
+  <file src="tests/SapiEmitterTest.php">
+    <PossiblyInvalidArgument occurrences="1">
+      <code>$header['header']</code>
+    </PossiblyInvalidArgument>
+  </file>
+  <file src="tests/SapiStreamEmitterTest.php">
+    <MixedArgument occurrences="7">
+      <code>$startPosition</code>
+      <code>$first</code>
+      <code>$last - $first + 1</code>
+      <code>$length</code>
+      <code>$sizeBytes</code>
+      <code>$position</code>
+      <code>$response</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="7">
+      <code>$startPosition</code>
+      <code>$first</code>
+      <code>$last</code>
+      <code>$position</code>
+      <code>$peakMemoryUsage</code>
+      <code>$length</code>
+      <code>$response</code>
+    </MixedAssignment>
+    <MixedFunctionCall occurrences="1">
+      <code>$closureTrackMemoryUsage()</code>
+    </MixedFunctionCall>
+    <MixedOperand occurrences="9">
+      <code>$first</code>
+      <code>$last</code>
+      <code>$last</code>
+      <code>$rangeBlocks[0]</code>
+      <code>$rangeBlocks[1]</code>
+      <code>$maxBufferLength * $rangeBlocks[1]</code>
+      <code>($maxBufferLength * $rangeBlocks[1]) + $maxBufferLength</code>
+      <code>$sizeBytes</code>
+      <code>$peakMemoryUsage</code>
+    </MixedOperand>
+    <PossiblyInvalidArgument occurrences="2">
+      <code>$header['header']</code>
+      <code>testEmitJsonResponse</code>
+    </PossiblyInvalidArgument>
+    <PossiblyUndefinedVariable occurrences="1">
+      <code>$first</code>
+    </PossiblyUndefinedVariable>
+    <UndefinedMethod occurrences="3">
+      <code>setMaxBufferLength</code>
+      <code>setMaxBufferLength</code>
+      <code>setMaxBufferLength</code>
+    </UndefinedMethod>
+    <UnusedVariable occurrences="5">
+      <code>$rewindCalled</code>
+      <code>$fullContentsCalled</code>
+      <code>$unit</code>
+      <code>$length</code>
+      <code>$last</code>
+    </UnusedVariable>
+  </file>
+</files>

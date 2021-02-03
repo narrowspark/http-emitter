@@ -19,21 +19,19 @@
         }
     ],
     "require": {
-        "php": "^7.2",
-        "psr/http-message": "^1.0"
+        "php": "^7.2 || ^8.0",
+        "psr/http-message": "^1.0",
+        "thecodingmachine/safe": "v1.3.3"
     },
     "provide": {
         "psr/http-message-implementation": "^1.0"
     },
     "require-dev": {
-        "narrowspark/coding-standard": "^3.0.0",
-        "phpunit/phpunit": "^8.3.4",
-        "zendframework/zend-diactoros": "^1.8.0 || ^2.0.0"
-    },
-    "config": {
-        "optimize-autoloader": true,
-        "sort-packages": true,
-        "preferred-install": "dist"
+        "ext-json": "*",
+        "phpunit/phpunit": "^9.5.2",
+        "thecodingmachine/phpstan-safe-rule": "v1.0.1",
+        "laminas/laminas-diactoros": "^2.5.0",
+        "mockery/mockery": "^1.4.2"
     },
     "autoload": {
         "psr-4": {
@@ -51,16 +49,42 @@
             "tests/OverwritePhpFunctions.php"
         ]
     },
-    "minimum-stability": "stable",
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "preferred-install": "dist"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "scripts": {
-        "coverage": "phpunit --coverage-html=\"build/logs\"",
-        "cs": "php-cs-fixer fix",
-        "phpstan": "phpstan analyse -c phpstan.neon src --memory-limit=-1",
-        "test": "phpunit",
-        "changelog":  "changelog-generator generate --config=\".changelog\" --file --prepend"
+        "post-install-cmd": "composer --working-dir=./.build install",
+        "post-update-cmd": "composer --working-dir=./.build update",
+        "changelog": "composer --working-dir=./.build changelog",
+        "coverage": [
+            "phpunit --dump-xdebug-filter=./.build/phpunit/.xdebug-filter.php",
+            "phpunit --prepend=./.build/phpunit/.xdebug-filter.php --coverage-html=./.build/phpunit/coverage"
+        ],
+        "cs": "composer --working-dir=./.build cs -- -v",
+        "cs:check": "composer --working-dir=./.build cs:check -- -v",
+        "infection": "composer --working-dir=./.build infection -- --min-covered-msi=73 --min-msi=61",
+        "phpstan": "composer --working-dir=./.build phpstan -- --memory-limit=-1",
+        "phpstan:baseline": "composer --working-dir=./.build phpstan:baseline -- --memory-limit=-1",
+        "psalm": "composer --working-dir=./.build psalm",
+        "psalm:baseline": "composer --working-dir=./.build psalm:baseline",
+        "psalm:fix": "composer --working-dir=./.build psalm:fix",
+        "rector-src": "composer --working-dir=./.build rector-src",
+        "rector-src:fix": "composer --working-dir=./.build rector-src:fix",
+        "rector-tests": "composer --working-dir=./.build rector-tests",
+        "rector-tests:fix": "composer --working-dir=./.build rector-tests:fix",
+        "test": "phpunit"
     },
     "support": {
-        "issues": "https://github.com/narrowspark/http-emitter/issues",
-        "source": "https://github.com/narrowspark/http-emitter"
+        "issues": "https://github.com/narrowspark/php-library-template/issues",
+        "source": "https://github.com/narrowspark/php-library-template"
     }
 }

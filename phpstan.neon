@@ -1,16 +1,30 @@
 includes:
-#    - vendor/pepakriz/phpstan-exception-rules/extension.neon
-    - vendor/phpstan/phpstan-deprecation-rules/rules.neon
-    - vendor/phpstan/phpstan-mockery/extension.neon
-    - vendor/phpstan/phpstan-phpunit/extension.neon
-    - vendor/phpstan/phpstan-phpunit/rules.neon
-    - vendor/phpstan/phpstan-strict-rules/rules.neon
-#    - vendor/thecodingmachine/phpstan-strict-rules/phpstan-strict-rules.neon
-    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+    - %currentWorkingDirectory%/vendor/narrowspark/coding-standard/base_rules.neon
+    - %currentWorkingDirectory%/phpstan-baseline.neon
+    - vendor/thecodingmachine/phpstan-safe-rule/phpstan-safe-rule.neon
 
 parameters:
-    level: max
-    inferPrivatePropertyTypeFromConstructor: true
+    paths:
+        -  %currentWorkingDirectory%/../src
+        -  %currentWorkingDirectory%/../tests
 
-    autoload_directories:
-        - %currentWorkingDirectory%/src
+    bootstrapFiles:
+        - %currentWorkingDirectory%/vendor/autoload.php
+
+    scanDirectories:
+        - %currentWorkingDirectory%/../src
+        - %currentWorkingDirectory%/../tests
+
+    tmpDir: %currentWorkingDirectory%/phpstan
+
+    excludes_analyse:
+
+    ignoreErrors:
+        -
+            message: "#^Should not use node with type \"Stmt_Echo\", please change the code\\.$#"
+            count: 1
+            path: src/SapiEmitter.php
+        -
+            message: "#^Should not use node with type \"Stmt_Echo\", please change the code\\.$#"
+            count: 5
+            path: src/SapiStreamEmitter.php

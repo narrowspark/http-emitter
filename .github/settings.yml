@@ -1,0 +1,108 @@
+# https://github.com/probot/settings
+
+branches:
+  - name: master
+    protection:
+      enforce_admins: false
+      required_pull_request_reviews:
+        dismiss_stale_reviews: true
+        require_code_owner_reviews: true
+        required_approving_review_count: 1
+      restrictions:
+
+        # https://developer.github.com/v3/repos/branches/#parameters-1
+
+        # Note: User, app, and team restrictions are only available for organization-owned repositories.
+        # Set to null to disable when using this configuration for a repository on a personal account.
+
+        apps:
+          - "dependabot-preview"
+        teams: []
+
+labels:
+  - name: Added
+    description: "Changelog Added"
+    color: 90db3f
+
+  - name: Changed
+    description: "Changelog Changed"
+    color: fbca04
+
+  - name: "Dependency update"
+    description: "Pull requests that update a dependency file"
+    color: e1f788
+
+  - name: Deprecated
+    description: "Changelog Deprecated"
+    color: 1d76db
+
+  - name: Duplicate
+    color: 000000
+
+  - name: Enhancement
+    color: d7e102
+
+  - name: Fixed
+    description: "Changelog Fixed"
+    color: 9ef42e
+
+  - name: Removed
+    description: "Changelog Removed"
+    color: e99695
+
+  - name: Security
+    description: "Changelog Security"
+    color: ed3e3b
+
+  - name: "Status: Good first issue"
+    color: d7e102
+
+  - name: "Status: Help wanted"
+    color: 85d84e
+
+  - name: "Status: Needs Work"
+    color: fad8c7
+
+  - name: "Status: Waiting for feedback"
+    color: fef2c0
+
+  - name: "Type: BC Break"
+    color: b60205
+
+  - name: "Type: Bug"
+    color: b60205
+
+  - name: "Type: Critical"
+    color: ff8c00
+
+  - name: "Type: RFC"
+    color: fbca04
+
+  - name: "Type: Unconfirmed"
+    color: 444444
+
+  - name: "Type: Wontfix"
+    color: 000000
+
+  - name: "semantic-release"
+    color: ff0000
+
+repository:
+  allow_merge_commit: false
+  allow_rebase_merge: true
+  allow_squash_merge: false
+  archived: false
+  default_branch: master
+  delete_branch_on_merge: true
+  description: ":satellite: Emitting psr-7 responses."
+  has_downloads: true
+  has_issues: true
+  has_pages: false
+  has_projects: false
+  has_wiki: false
+  name: "http-emitter"
+  private: false
+
+  # https://developer.github.com/v3/repos/branches/#remove-branch-protection
+
+  topics: "php, library, narrowspark, http, stream, psr-7, swoole, emitter, sapi, http-emitter"

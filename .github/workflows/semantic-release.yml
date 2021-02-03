@@ -1,0 +1,35 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Semantic Release"
+
+on:
+  push:
+    branches:
+      - ([0-9])?(.{+([0-9]),x}).x
+      - master
+      - next
+      - next-major
+      - alpha
+      - beta
+
+jobs:
+  semantic-release:
+    name: "Semantic Release"
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: "Semantic Release"
+        if: ${{ github.repository != 'narrowspark/php-library-template' }}
+        uses: cycjimmy/semantic-release-action@v2
+        with:
+          semantic_version: 17.0.7
+          extra_plugins: |
+            @semantic-release/changelog@^5.0.1
+            @semantic-release/git@^9.0.0
+            @google/semantic-release-replace-plugin@^1.0.0
+            conventional-changelog-conventionalcommits@^4.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.SEMANTIC_GITHUB_TOKEN }}

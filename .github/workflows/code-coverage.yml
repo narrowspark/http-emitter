@@ -1,0 +1,99 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "PHP Code Coverage"
+
+on:
+  push:
+    paths:
+      - "**.php"
+      - "composer.json"
+  pull_request:
+    paths:
+      - "**.php"
+      - "composer.json"
+
+jobs:
+  code-coverage:
+    name: "Code Coverage"
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php-versions: ["7.4.2", "8.0.0"]
+
+    env:
+      key: "code-coverage-v1" # change key (version) to clear cache
+      extensions: "mbstring"
+      ini-values: "date.timezone=Europe/Berlin, opcache.enable_cli=1, serialize_precision=14, pcov.directory=api"
+      tools: "composer, composer-prefetcher, cs2pr"
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: "Setup cache environment"
+        id: cache-env
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: ${{ env.extensions }}
+          key: ${{ env.key }}
+
+      - name: "Cache extensions"
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.cache-env.outputs.dir }}
+          key: ${{ steps.cache-env.outputs.key }}
+          restore-keys: ${{ steps.cache-env.outputs.key }}
+
+      - name: "Setup PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: ${{ env.extensions }}
+          ini-values: ${{ env.ini-values }}
+          tools: ${{ env.tools }}
+          coverage: "pcov"
+
+      - name: "Configure Container"
+        run: |
+          echo "::set-env name=PHPUNIT::./vendor/bin/phpunit --verbose"
+          echo "::set-env name=COMPOSER_UP::composer update --no-progress --no-suggest --no-interaction --prefer-source --ansi"
+          echo "::set-env name=PHPUNIT_COVERAGE::true"
+
+      - name: "Setup Problem Matchers for PHP"
+        run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+
+      - name: "Check PHP Version"
+        run: php -v
+
+      - name: "Check Composer Version"
+        run: composer -V
+
+      - name: "Validate composer.json and composer.lock"
+        run: "composer validate --strict"
+
+      - name: "List all php extensions with versions"
+        run: php -r 'foreach (get_loaded_extensions() as $extension) echo $extension . " " . phpversion($extension) . PHP_EOL;'
+
+      - name: "Get Composer Cache Directory"
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: "Cache dependencies"
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: "Install locked dependencies with composer"
+        run: $COMPOSER_UP
+
+      - name: "Collect code coverage"
+        run: $PHPUNIT --configuration=./phpunit.xml --coverage-clover=./.build/phpunit/coverage/clover.xml
+
+      - name: "Send code coverage report to Codecov.io"
+        uses: codecov/codecov-action@v1
