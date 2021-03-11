@@ -45,8 +45,12 @@ final class SapiEmitterTest extends AbstractEmitterTest
     public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown(): void
     {
         $stream = $this->createMock(StreamInterface::class);
-        $stream->method('__toString')->willReturn('Content!');
-        $stream->method('getSize')->willReturn(null);
+        $stream
+            ->method('__toString')
+            ->willReturn('Content!');
+        $stream
+            ->method('getSize')
+            ->willReturn(null);
 
         $response = (new Response())
             ->withStatus(200)
@@ -57,7 +61,7 @@ final class SapiEmitterTest extends AbstractEmitterTest
         ob_end_clean();
 
         foreach (HeaderStack::stack() as $header) {
-            self::assertStringNotContainsStringIgnoringCase('Content-Length:', $header['header']);
+            self::assertStringNotContainsStringIgnoringCase('Content-Length:', (string) $header['header']);
         }
     }
 }

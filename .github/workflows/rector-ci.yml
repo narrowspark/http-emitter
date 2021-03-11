@@ -1,6 +1,6 @@
 # https://help.github.com/en/categories/automating-your-workflow-with-github-actions
 
-name: "Mutation testing"
+name: "Rector"
 
 on:
   push:
@@ -13,8 +13,8 @@ on:
       - "composer.json"
 
 jobs:
-  narrowspark-infection:
-    name: "Infection"
+  rector-ci:
+    name: "Rector"
 
     runs-on: ubuntu-latest
 
@@ -25,12 +25,10 @@ jobs:
         compiler: [ "default" ]
 
     env:
-      key: "mutation-v1" # change key (version) to clear cache
-      min-covered-msi: 100
-      min-msi: 100
-      extensions: "mbstring"
+      key: "rector-ci-v1" # change key (version) to clear cache
+      extensions: "mbstring, intl"
       ini-values: "date.timezone=Europe/Berlin, assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=0, opcache.optimization_level=-1, opcache.jit=1255, opcache.jit_buffer_size=32M, serialize_precision=14"
-      tools: "composer"
+      tools: "composer, cs2pr"
 
     steps:
       - name: "Git checkout"
@@ -64,7 +62,7 @@ jobs:
           extensions: ${{ env.extensions }}
           ini-values: ${{ env.ini-values }}
           tools: ${{ env.tools }}
-          coverage: "pcov"
+          coverage: "none"
 
       - name: "Setup Problem Matchers for PHP"
         run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
@@ -115,5 +113,6 @@ jobs:
         if: matrix.dependencies == 'lowest'
         run: composer update --no-progress --no-interaction --ansi --prefer-lowest --prefer-stable
 
-      - name: "mutation tests"
-        run: composer infection -- --ignore-msi-with-no-mutations --min-covered-msi=${{ env.min-covered-msi }} --min-msi=${{ env.min-msi }}
+      - name: "Rector lint"
+        run: composer rector -- --no-progress-bar
+

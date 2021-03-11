@@ -13,7 +13,10 @@ declare(strict_types=1);
 
 namespace Narrowspark\HttpEmitter\Tests\Helper;
 
+use const SEEK_SET;
+use function is_callable;
 use function Safe\substr;
+use function strlen;
 
 final class StreamMock
 {
@@ -44,7 +47,7 @@ final class StreamMock
     {
         $this->position = $this->size;
 
-        return \is_callable($this->contents) ? ($this->contents)(0) : $this->contents;
+        return is_callable($this->contents) ? ($this->contents)(0) : $this->contents;
     }
 
     public function handleTell(): int
@@ -57,7 +60,7 @@ final class StreamMock
         return $this->position >= $this->size;
     }
 
-    public function handleSeek(int $offset, ?int $whence = \SEEK_SET): bool
+    public function handleSeek(int $offset, ?int $whence = SEEK_SET): bool
     {
         if ($offset >= $this->size) {
             return false;
@@ -77,26 +80,26 @@ final class StreamMock
 
     public function handleRead(int $length): string
     {
-        if ($this->trackPeakBufferLength) {
+        if ($this->trackPeakBufferLength !== null) {
             ($this->trackPeakBufferLength)($length);
         }
 
-        $data = \is_callable($this->contents)
+        $data = is_callable($this->contents)
             ? ($this->contents)($this->position, $length)
             : substr($this->contents, $this->position, $length);
 
-        $this->position += \strlen($data);
+        $this->position += strlen($data);
 
         return $data;
     }
 
     public function handleGetContents(): string
     {
-        $remainingContents = \is_callable($this->contents)
+        $remainingContents = is_callable($this->contents)
             ? ($this->contents)($this->position)
             : substr($this->contents, $this->position);
 
-        $this->position += \strlen($remainingContents);
+        $this->position += strlen($remainingContents);
 
         return $remainingContents;
     }

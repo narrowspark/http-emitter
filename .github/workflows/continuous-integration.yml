@@ -1,6 +1,6 @@
 # https://help.github.com/en/categories/automating-your-workflow-with-github-actions
 
-name: "Static analyzing"
+name: "Continuous Integration on Linux"
 
 on:
   push:
@@ -13,22 +13,22 @@ on:
       - "composer.json"
 
 jobs:
-  narrowspark-phpstan-static-analysis:
-    name: "PHPStan"
+  LinuxIntegration:
+    name: "PHP ${{ matrix.php-versions }} Test on ubuntu-latest OS with ${{ matrix.dependencies }} dependencies"
 
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         php-versions: [ "8.0" ]
-        dependencies: [ "locked" ]
+        dependencies: [ "highest", "lowest", "locked" ]
         compiler: [ "default" ]
 
     env:
-      key: "static-analyze-v1" # change key (version) to clear cache
-      extensions: "mbstring, intl"
-      ini-values: "date.timezone=Europe/Berlin, assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=0, opcache.optimization_level=-1, opcache.jit=1255, opcache.jit_buffer_size=32M, serialize_precision=14"
-      tools: "composer, cs2pr"
+      key: "continuous-integration-linux-v1" # change key (version) to clear cache
+      extensions: "mbstring"
+      ini-values: "date.timezone=Europe/Berlin, opcache.enable_cli=0, serialize_precision=14"
+      tools: "composer"
 
     steps:
       - name: "Git checkout"
@@ -39,6 +39,10 @@ jobs:
           GIT_COMMITTER_NAME: "GitHub Actions Shell"
           GIT_AUTHOR_NAME: "GitHub Actions Shell"
           EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+      - name: "Override PHP ini values for JIT compiler"
+        if: matrix.compiler == 'jit'
+        run: echo "PHP_INI_VALUES::assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=0, opcache.optimization_level=-1, opcache.jit=1255, opcache.jit_buffer_size=32M" >> $GITHUB_ENV
 
       - name: "Setup cache environment"
         id: cache-env
@@ -113,22 +117,39 @@ jobs:
         if: matrix.dependencies == 'lowest'
         run: composer update --no-progress --no-interaction --ansi --prefer-lowest --prefer-stable
 
-      - name: "analyze php code"
-        run: composer phpstan -- --error-format=checkstyle | cs2pr
+      - name: "Setup Problem Matchers for PHPUnit"
+        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
-  narrowspark-psalm-static-analysis:
-    name: "Psalm"
+      - name: "Run Test's Coverage"
+        if: matrix.dependencies == 'locked'
+        run: ./vendor/bin/phpunit --verbose --configuration=./phpunit.xml --coverage-clover=./.build/phpunit/coverage/clover.xml
+        env:
+          XDEBUG_MODE: "coverage"
 
-    runs-on: ubuntu-latest
+      - name: "Run Test's Suite"
+        if: matrix.dependencies == 'lowest' || matrix.dependencies == 'highest'
+        run: ./vendor/bin/phpunit --verbose --configuration=./phpunit.xml
+
+      - name: "Upload linux php coverage result"
+        if: matrix.dependencies == 'locked'
+        uses: actions/upload-artifact@v2
+        with:
+          name: "linux_clover"
+          path: "./.build/phpunit/coverage/clover.xml"
+
+  WindowsIntegration:
+    name: "PHP ${{ matrix.php-versions }} Test on windows-latest OS with ${{ matrix.dependencies }} dependencies"
+
+    runs-on: windows-latest
 
     strategy:
       matrix:
         php-versions: [ "8.0" ]
-        dependencies: [ "locked" ]
+        dependencies: [ "highest", "lowest", "locked" ]
 
     env:
-      key: "static-analyze-v4" # change key (version) to clear cache
-      extensions: "mbstring, intl"
+      key: "continuous-integration-windows-v1" # change key (version) to clear cache
+      extensions: "mbstring"
       ini-values: "date.timezone=Europe/Berlin, assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=0, opcache.optimization_level=-1, opcache.jit=1255, opcache.jit_buffer_size=32M, serialize_precision=14"
       tools: "composer"
 
@@ -172,19 +193,28 @@ jobs:
       - name: "Check PHP Version"
         run: php -v
 
-      - name: "List all php extensions with versions"
-        run: php -r 'foreach (get_loaded_extensions() as $extension) echo $extension . " " . phpversion($extension) . PHP_EOL;'
+      #- name: "List all php extensions with versions"
+      #  run: php -r 'foreach (get_loaded_extensions() as $extension) echo $extension . " " . phpversion($extension) . PHP_EOL;'
 
-      - name: "Configure Container"
+      - name: "Configure container"
         env:
           GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
           GIT_USER_USERNAME: ${{ secrets.GIT_USER_USERNAME }}
         run: |
-          EMAIL=${GIT_USER_EMAIL:-"github-actions[bot]@users.noreply.github.com"}
-          NAME=${GIT_USER_USERNAME:-"github-actions-shell"}
+          if (${env:GIT_USER_EMAIL}) {
+            git config --global user.email "${env:GIT_USER_EMAIL}"
+          } else {
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          }
 
-          git config --global user.email "${EMAIL}"
-          git config --global user.name "${NAME}"
+          if (${env:GIT_USER_USERNAME}) {
+            git config --global user.name "${env:GIT_USER_USERNAME}"
+          } else {
+            git config --global user.name "github-actions-shell"
+          }
+
+      - name: "Setup Problem Matchers for PHPUnit"
+        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
       - name: "Check Composer Version"
         run: composer -V
@@ -205,15 +235,59 @@ jobs:
 
       - name: "Install locked dependencies"
         if: matrix.dependencies == 'locked'
-        run: composer install --no-progress --no-interaction --ansi
+        run: Invoke-Expression -Command "composer install --no-progress --no-interaction --ansi"
 
       - name: "Install highest dependencies"
         if: matrix.dependencies == 'highest'
-        run: composer update --no-progress --no-interaction --ansi
+        shell: pwsh
+        run: Invoke-Expression -Command "composer update --no-progress --no-interaction --ansi"
 
       - name: "Install lowest dependencies"
         if: matrix.dependencies == 'lowest'
-        run: composer update --no-progress --no-interaction --ansi --prefer-lowest --prefer-stable
+        shell: pwsh
+        run: Invoke-Expression -Command "composer update --no-progress --no-interaction --ansi --prefer-lowest --prefer-stable"
 
-      - name: "analyze php code"
-        run: composer psalm -- --shepherd --show-info=false --output-format=github
+      - name: "Run Test's Coverage"
+        if: matrix.dependencies == 'locked'
+        run: Invoke-Expression -Command ".\vendor\bin\phpunit --verbose --configuration=.\phpunit.xml --coverage-clover=.\.build\phpunit\coverage\clover.xml"
+        env:
+          XDEBUG_MODE: "coverage"
+
+      - name: "Run Test's Suite"
+        if: matrix.dependencies == 'lowest' || matrix.dependencies == 'highest'
+        run: Invoke-Expression -Command ".\vendor\bin\phpunit --verbose --configuration=.\phpunit.xml"
+
+      - name: "Upload windows php coverage result"
+        if: matrix.dependencies == 'locked'
+        uses: actions/upload-artifact@v2
+        with:
+          name: "windows_clover"
+          path: "./.build/phpunit/coverage/clover.xml"
+
+
+  Coverage:
+    needs: ["LinuxIntegration", "WindowsIntegration"]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Git checkout"
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+        env:
+          GIT_COMMITTER_NAME: "GitHub Actions Shell"
+          GIT_AUTHOR_NAME: "GitHub Actions Shell"
+          EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+      - name: "Download php coverage result"
+        id: download
+        uses: actions/download-artifact@v2
+        with:
+          path: "./clover"
+
+      - name: "Send code coverage report to Codecov.io"
+        uses: codecov/codecov-action@v1
+        with:
+          directory: ${{steps.download.outputs.download-path}}
+          fail_ci_if_error: true

@@ -5,6 +5,8 @@
 composer.phar
 /composer.lock
 
+rector-temp-phpstan.neon
+
 .php_cs.cache
 .phpunit.result.cache
 .phpunit.xdebug-filter.php

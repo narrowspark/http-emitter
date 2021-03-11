@@ -1,13 +1,24 @@
 # https://github.com/probot/settings
 
 branches:
-  - name: master
+  - name: main
+
+    # https://docs.github.com/en/rest/reference/repos#delete-branch-protection
+    # https://docs.github.com/en/rest/reference/repos#update-branch-protection
+
     protection:
       enforce_admins: false
+
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_code_owner_reviews: true
         required_approving_review_count: 1
+
+      required_status_checks:
+        contexts:
+
+        strict: false
+
       restrictions:
 
         # https://developer.github.com/v3/repos/branches/#parameters-1
@@ -16,8 +27,13 @@ branches:
         # Set to null to disable when using this configuration for a repository on a personal account.
 
         apps:
-          - "dependabot-preview"
+          - "semantic-release-bot"
+          - "renovate"
         teams: []
+#        users: []
+
+# https://docs.github.com/en/rest/reference/issues#create-a-label
+# https://docs.github.com/en/rest/reference/issues#update-a-label
 
 labels:
   - name: Added
@@ -41,6 +57,9 @@ labels:
 
   - name: Enhancement
     color: d7e102
+
+  - name: Stale
+    color: 000000
 
   - name: Fixed
     description: "Changelog Fixed"
@@ -87,9 +106,11 @@ labels:
   - name: "semantic-release"
     color: ff0000
 
+# https://docs.github.com/en/rest/reference/repos#update-a-repository
+
 repository:
-  allow_merge_commit: false
-  allow_rebase_merge: true
+  allow_merge_commit: true
+  allow_rebase_merge: false
   allow_squash_merge: false
   archived: false
   default_branch: master

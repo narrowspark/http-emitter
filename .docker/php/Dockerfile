@@ -60,23 +60,23 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 RUN php -r "readfile('http://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer && \
     composer global require phploc/phploc ergebnis/composer-normalize
 
-# @TODO update php version narrowspark/automatic-composer-prefetcher narrowspark/automatic-security-audit
-
 ARG INSTALL_XDEBUG
 ARG XDEBUG_VERSION
 
 RUN if [ ${INSTALL_XDEBUG} = true ]; then pecl install "xdebug-${XDEBUG_VERSION}" ;fi
+RUN if [ ${INSTALL_XDEBUG} = true ]; then docker-php-ext-enable xdebug ;fi
 
 RUN { \
         echo 'xdebug.idekey=PHPSTORM'; \
-        echo 'xdebug.remote_port=9000'; \
-        echo 'xdebug.remote_enable=on'; \
-        echo 'xdebug.remote_connect_back=on'; \
+        echo 'xdebug.remote_port=9003'; \
+        echo 'xdebug.discover_client_host=true'; \
+        echo 'xdebug.client_host=host.docker.internal'; \
+        echo 'xdebug.start_with_request=yes'; \
         echo 'xdebug.profiler_output_dir="/var/log/xdebug"'; \
         echo 'xdebug.cli_color=1'; \
+        echo 'xdebug.mode=profile,develop,coverage'; \
+        echo 'xdebug.max_nesting_level=1000'; \
     } > /usr/local/etc/php/conf.d/php-ext-xdebug.ini
-
-RUN if [ ${INSTALL_XDEBUG} = true ]; then docker-php-ext-enable xdebug ;fi
 
 RUN mkdir /var/log/php && touch /var/log/php/cli-error.log && chmod 0664 /var/log/php/cli-error.log
 

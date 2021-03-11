@@ -1,32 +1,18 @@
 version: '3'
 services:
-    php74_64:
-      build:
-        context: ./.docker/php/
-        args:
-          NAMESPACE: "php"
-          PHP_VERSION: "7.4.2"
-          XDEBUG_VERSION: "2.9.6"
-          INSTALL_XDEBUG: "true"
-      expose:
-        - 9000
-      volumes:
-        - data:/var/www/package
-      tty: true
-
-    php8_64:
-      build:
-        context: ./.docker/php/
-        args:
-          NAMESPACE: "php"
-          PHP_VERSION: "8.0.0"
-          XDEBUG_VERSION: "3.0.0"
-          INSTALL_XDEBUG: "true"
-      expose:
-        - 9000
-      volumes:
-        - data:/var/www/package
-      tty: true
+  php80_64:
+    build:
+      context: ./.docker/php/
+      args:
+        NAMESPACE: "php"
+        PHP_VERSION: "8.0.2"
+        XDEBUG_VERSION: "3.0.3"
+        INSTALL_XDEBUG: "true"
+    expose:
+      - 9000
+    volumes:
+      - data:/var/www/package
+    tty: true
 
 volumes:
   data:

@@ -25,6 +25,7 @@ use Laminas\Diactoros\Response;
 use Narrowspark\HttpEmitter\Contract\RuntimeException;
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
 use function Safe\sprintf;
 
 /**
@@ -66,7 +67,9 @@ abstract class AbstractEmitterTest extends TestCase
     final public function testEmitsMessageBody(): void
     {
         $response = $this->arrangeStatus200AndTypeTextResponse();
-        $response->getBody()->write('Content!');
+
+        $responseBody = $response->getBody();
+        $responseBody->write('Content!');
 
         $this->expectOutputString('Content!');
 
@@ -78,7 +81,8 @@ abstract class AbstractEmitterTest extends TestCase
 
     final public function testMultipleSetCookieHeadersAreNotReplaced(): void
     {
-        $response = (new Response())
+        $response = new Response();
+        $response = $response
             ->withStatus(200)
             ->withAddedHeader('Set-Cookie', 'foo=bar')
             ->withAddedHeader('Set-Cookie', 'bar=baz');
@@ -128,13 +132,13 @@ abstract class AbstractEmitterTest extends TestCase
         self::assertSame($expectedStack, HeaderStack::stack());
     }
 
-    /**
-     * @return \Psr\Http\Message\ResponseFactoryInterface|\Psr\Http\Message\ResponseInterface
-     */
-    private function arrangeStatus200AndTypeTextResponse()
+    private function arrangeStatus200AndTypeTextResponse(): ResponseInterface
     {
-        return (new Response())
-            ->withStatus(200)
+        $response = new Response();
+        $response = $response
+            ->withStatus(200);
+
+        return $response
             ->withAddedHeader('Content-Type', 'text/plain');
     }
 }

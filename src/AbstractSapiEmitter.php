@@ -15,6 +15,9 @@ namespace Narrowspark\HttpEmitter;
 
 use Narrowspark\HttpEmitter\Contract\RuntimeException;
 use Psr\Http\Message\ResponseInterface;
+use const PHP_SAPI;
+use function function_exists;
+use function in_array;
 use function Safe\fastcgi_finish_request;
 use function Safe\sprintf;
 use function Safe\vsprintf;
@@ -136,11 +139,11 @@ abstract class AbstractSapiEmitter
      */
     protected function closeConnection(): void
     {
-        if (! \in_array(\PHP_SAPI, ['cli', 'phpdbg'], true)) {
+        if (! in_array(PHP_SAPI, ['cli', 'phpdbg'], true)) {
             Util::closeOutputBuffers(0, true);
         }
 
-        if (\function_exists('fastcgi_finish_request')) {
+        if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
         }
     }

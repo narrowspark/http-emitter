@@ -35,6 +35,7 @@ use function Safe\json_encode;
 use function Safe\ob_end_clean;
 use function Safe\ob_end_flush;
 use function Safe\substr;
+use function strlen;
 
 /**
  * @internal
@@ -44,6 +45,9 @@ use function Safe\substr;
  */
 final class SapiStreamEmitterTest extends AbstractEmitterTest
 {
+    /** @var \Narrowspark\HttpEmitter\SapiStreamEmitter */
+    protected $emitter;
+
     protected function setUp(): void
     {
         HeaderStack::reset();
@@ -60,6 +64,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         $response = (new Response())
             ->withStatus(200)
             ->withBody($stream);
+
         ob_start();
 
         $this->emitter->emit($response);
@@ -70,12 +75,24 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
     public function testDoesNotInjectContentLengthHeaderIfStreamSizeIsUnknown(): void
     {
         $stream = $this->createMock(StreamInterface::class);
-        $stream->method('__toString')->willReturn('Content!');
-        $stream->method('isSeekable')->willReturn(false);
-        $stream->method('isReadable')->willReturn(false);
-        $stream->method('eof')->willReturn(true);
-        $stream->method('rewind')->willReturn(true);
-        $stream->method('getSize')->willReturn(null);
+        $stream
+            ->method('__toString')
+            ->willReturn('Content!');
+        $stream
+            ->method('isSeekable')
+            ->willReturn(false);
+        $stream
+            ->method('isReadable')
+            ->willReturn(false);
+        $stream
+            ->method('eof')
+            ->willReturn(true);
+        $stream
+            ->method('rewind')
+            ->willReturn(true);
+        $stream
+            ->method('getSize')
+            ->willReturn(null);
 
         $response = (new Response())
             ->withStatus(200)
@@ -86,7 +103,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         ob_end_clean();
 
         foreach (HeaderStack::stack() as $header) {
-            self::assertStringNotContainsStringIgnoringCase('Content-Length:', $header['header']);
+            self::assertStringNotContainsStringIgnoringCase('Content-Length:', (string) $header['header']);
         }
     }
 
@@ -133,11 +150,9 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
      */
     public function testEmitStreamResponse(bool $seekable, bool $readable, string $contents, int $maxBufferLength): void
     {
-        $size = \strlen($contents);
+        $size = strlen($contents);
         $startPosition = 0;
         $peakBufferLength = 0;
-        $rewindCalled = false;
-        $fullContentsCalled = false;
 
         $streamMock = new StreamMock(
             $contents,
@@ -151,15 +166,21 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         );
 
         $stream = $this->createMock(StreamInterface::class);
-        $stream->method('isSeekable')->willReturn($seekable);
-        $stream->method('isReadable')->willReturn($readable);
+        $stream
+            ->method('isSeekable')
+            ->willReturn($seekable);
+        $stream
+            ->method('isReadable')
+            ->willReturn($readable);
 
         if ($seekable) {
             $stream
                 ->expects(self::atLeastOnce())
                 ->method('rewind')
                 ->willReturnCallback([$streamMock, 'handleRewind']);
-            $stream->method('seek')->willReturnCallback([$streamMock, 'handleSeek']);
+            $stream
+                ->method('seek')
+                ->willReturnCallback([$streamMock, 'handleSeek']);
         }
 
         if (! $seekable) {
@@ -168,22 +189,36 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         }
 
         if ($readable) {
-            $stream->expects(self::never())->method('__toString');
-            $stream->method('eof')->willReturnCallback([$streamMock, 'handleEof']);
-            $stream->method('read')->willReturnCallback([$streamMock, 'handleRead']);
+            $stream
+                ->expects(self::never())
+                ->method('__toString');
+            $stream
+                ->method('eof')
+                ->willReturnCallback([$streamMock, 'handleEof']);
+            $stream
+                ->method('read')
+                ->willReturnCallback([$streamMock, 'handleRead']);
         }
 
         if (! $readable) {
-            $stream->expects(self::never())->method('read');
-            $stream->expects(self::never())->method('eof');
+            $stream
+                ->expects(self::never())
+                ->method('read');
+            $stream
+                ->expects(self::never())
+                ->method('eof');
 
             $seekable
                 ? $stream
                     ->method('getContents')
                     ->willReturnCallback([$streamMock, 'handleGetContents'])
-                : $stream->expects(self::never())->method('getContents');
+                : $stream
+                    ->expects(self::never())
+                    ->method('getContents');
 
-            $stream->method('__toString')->willReturnCallback([$streamMock, 'handleToString']);
+            $stream
+                ->method('__toString')
+                ->willReturnCallback([$streamMock, 'handleToString']);
         }
 
         $response = (new Response())
@@ -191,6 +226,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             ->withBody($stream);
 
         ob_start();
+
         $this->emitter->setMaxBufferLength($maxBufferLength);
         $this->emitter->emit($response);
         $emittedContents = ob_get_clean();
@@ -269,6 +305,8 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
      * @param string $contents        Contents stored in stream
      * @param int    $maxBufferLength maximum buffer length used in the emitter call
      *
+     * @psalm-param array{0: string, 1: int, 2: int, 3: string} $range
+     *
      * @dataProvider provideEmitRangeStreamResponseCases
      */
     public function testEmitRangeStreamResponse(
@@ -278,8 +316,8 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         string $contents,
         int $maxBufferLength
     ): void {
-        [$unit, $first, $last, $length] = $range;
-        $size = \strlen($contents);
+        [/* $unit */, $first, $last, /* $length */] = $range;
+        $size = strlen($contents);
 
         $startPosition = $readable && ! $seekable
             ? $first
@@ -301,12 +339,22 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         );
 
         $stream = $this->createMock(StreamInterface::class);
-        $stream->method('isSeekable')->willReturn($seekable);
-        $stream->method('isReadable')->willReturn($readable);
-        $stream->method('getSize')->willReturn($size);
-        $stream->method('tell')->willReturnCallback([$streamMock, 'handleTell']);
+        $stream
+            ->method('isSeekable')
+            ->willReturn($seekable);
+        $stream
+            ->method('isReadable')
+            ->willReturn($readable);
+        $stream
+            ->method('getSize')
+            ->willReturn($size);
+        $stream
+            ->method('tell')
+            ->willReturnCallback([$streamMock, 'handleTell']);
 
-        $stream->expects(self::never())->method('rewind');
+        $stream
+            ->expects(self::never())
+            ->method('rewind');
 
         if ($seekable) {
             $stream
@@ -314,10 +362,14 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
                 ->method('seek')
                 ->willReturnCallback([$streamMock, 'handleSeek']);
         } else {
-            $stream->expects(self::never())->method('seek');
+            $stream
+                ->expects(self::never())
+                ->method('seek');
         }
 
-        $stream->expects(self::never())->method('__toString');
+        $stream
+            ->expects(self::never())
+            ->method('__toString');
 
         if ($readable) {
             $stream
@@ -345,6 +397,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             ->withBody($stream);
 
         ob_start();
+
         $this->emitter->setMaxBufferLength($maxBufferLength);
         $this->emitter->emit($response);
         $emittedContents = ob_get_clean();
@@ -402,6 +455,8 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
      * @param null|array $rangeBlocks      emitted range of data in block units [$firstBlock, $lastBlock]
      * @param int        $maxBufferLength  maximum buffer length used in the emitter call
      *
+     * @psalm-param null|array{0: int, 1: int} $rangeBlocks
+     *
      * @dataProvider provideEmitMemoryUsageCases
      */
     public function testEmitMemoryUsage(
@@ -454,9 +509,15 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         );
 
         $stream = $this->createMock(StreamInterface::class);
-        $stream->method('isSeekable')->willReturn($seekable);
-        $stream->method('isReadable')->willReturn($readable);
-        $stream->method('eof')->willReturnCallback([$streamMock, 'handleEof']);
+        $stream
+            ->method('isSeekable')
+            ->willReturn($seekable);
+        $stream
+            ->method('isReadable')
+            ->willReturn($readable);
+        $stream
+            ->method('eof')
+            ->willReturnCallback([$streamMock, 'handleEof']);
 
         if ($seekable) {
             $stream
@@ -494,16 +555,13 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         );
 
         gc_collect_cycles();
-
         gc_disable();
 
         $this->emitter->setMaxBufferLength($maxBufferLength);
         $this->emitter->emit($response);
 
         ob_end_flush();
-
         gc_enable();
-
         gc_collect_cycles();
 
         $localMemoryUsage = memory_get_usage();
@@ -540,7 +598,9 @@ HTML;
             ->withStatus(200);
 
         ob_start();
+
         $this->emitter->emit($response);
+
         self::assertEquals('text/html; charset=utf-8', $response->getHeaderLine('content-type'));
         self::assertEquals($contents, ob_get_clean());
     }
@@ -564,9 +624,11 @@ HTML;
     /**
      * @param null|array|string $contents Contents stored in stream
      *
+     * @psalm-param null|array<array-key, string|bool>|string $contents
+     *
      * @dataProvider provideEmitJsonResponseCases
      */
-    public function testEmitJsonResponse($contents): void
+    public function testEmitJsonResponse(mixed $contents): void
     {
         $response = (new JsonResponse($contents))
             ->withStatus(200);
@@ -587,7 +649,9 @@ HTML;
             ->withStatus(200);
 
         ob_start();
+
         $this->emitter->emit($response);
+
         self::assertEquals('text/plain; charset=utf-8', $response->getHeaderLine('content-type'));
         self::assertEquals($contents, ob_get_clean());
     }
@@ -612,10 +676,13 @@ HTML;
         $response = (new Response())
             ->withHeader('Content-Range', $header);
 
-        $response->getBody()->write($body);
+        $responseBody = $response->getBody();
+        $responseBody->write($body);
 
         ob_start();
+
         $this->emitter->emit($response);
+
         self::assertEquals($expected, ob_get_clean());
     }
 
@@ -629,7 +696,9 @@ HTML;
             ->withHeader('Content-Range', 'bytes 3-6/*');
 
         ob_start();
+
         $this->emitter->emit($response);
+
         self::assertEquals('lo w', ob_get_clean());
     }
 }

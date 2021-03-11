@@ -1,7 +1,8 @@
 ---
-name: 🐛 Bug Report
-about: If something isn't working as expected.
-labels: Type: Bug
+name: "\U0001F41B Bug Report"
+about: "If something isn't working as expected \U0001F914."
+labels: 'Type: Bug'
+assignees: ''
 
 ---
 
@@ -9,10 +10,10 @@ labels: Type: Bug
     The Code of Conduct (../CODE_OF_CONDUCT.md) applies to all the activity on this repository.
 -->
 
-**Http emitter version(s) affected**: x.y.z
+**Version(s) affected**: x.y.z
 
 **Description**
-<!-- A clear and concise description of the problem. -->
+<!-- A clear and concise description of the problem / behavior. -->
 
 **How to reproduce**
 <!--- Code and/or config needed to reproduce the problem. -->

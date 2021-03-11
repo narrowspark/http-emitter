@@ -14,8 +14,9 @@ declare(strict_types=1);
 namespace Narrowspark\HttpEmitter;
 
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
+use function function_exists;
 
-if (! \function_exists('Narrowspark\\HttpEmitter\\headers_sent')) {
+if (! function_exists('Narrowspark\\HttpEmitter\\headers_sent')) {
     /**
      * Have headers been sent?
      *
@@ -37,7 +38,7 @@ if (! \function_exists('Narrowspark\\HttpEmitter\\headers_sent')) {
     }
 }
 
-if (! \function_exists('Narrowspark\\HttpEmitter\\header')) {
+if (! function_exists('Narrowspark\\HttpEmitter\\header')) {
     /**
      * Emit a header, without creating actual output artifacts.
      *

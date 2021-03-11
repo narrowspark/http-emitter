@@ -17,14 +17,7 @@ $license = License\Type\MIT::markdown(
 
 $license->save();
 
-$config = new Config($license->header(), [
-    // @todo waiting for php-cs-fixer 2.16.2
-    'global_namespace_import' => [
-        'import_classes' => true,
-        'import_constants' => false,
-        'import_functions' => false,
-    ]
-]);
+$config = new Config($license->header(), []);
 
 $config->getFinder()
     ->files()

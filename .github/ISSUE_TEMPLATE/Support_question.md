@@ -1,8 +1,8 @@
 ---
-name: 🤗 Support Question
-about: If you have a question 💬, please check out our [Discord](https://discord.gg/UBG6r9b) or [StackOverflow](https://stackoverflow.com/)!
-labels: Status: Help wanted
-
+name: '\U0001F917 Support Question'
+about: 'If you have a question \U0001F4AC, please check out our [Discord](https://discord.gg/UBG6r9b) or [StackOverflow](https://stackoverflow.com/)!'
+labels: 'Status: Help wanted'
+assignees: ''
 ---
 
 <!--

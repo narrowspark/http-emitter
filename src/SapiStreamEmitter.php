@@ -14,8 +14,11 @@ declare(strict_types=1);
 namespace Narrowspark\HttpEmitter;
 
 use Psr\Http\Message\ResponseInterface;
+use const CONNECTION_NORMAL;
+use function is_array;
 use function Safe\preg_match;
 use function Safe\substr;
+use function strlen;
 
 final class SapiStreamEmitter extends AbstractSapiEmitter
 {
@@ -52,7 +55,7 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
 
         $range = $this->parseContentRange($response->getHeaderLine('Content-Range'));
 
-        if (\is_array($range) && $range[0] === 'bytes') {
+        if (is_array($range) && $range[0] === 'bytes') {
             $this->emitBodyRange($range, $response, $this->maxBufferLength);
         } else {
             $this->emitBody($response, $this->maxBufferLength);
@@ -81,7 +84,7 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
         while (! $body->eof()) {
             echo $body->read($maxBufferLength);
 
-            if (connection_status() !== \CONNECTION_NORMAL) {
+            if (connection_status() !== CONNECTION_NORMAL) {
                 break;
             }
         }
@@ -94,7 +97,7 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
      */
     private function emitBodyRange(array $range, ResponseInterface $response, int $maxBufferLength): void
     {
-        [$unit, $first, $last, $length] = $range;
+        [/* $unit */, $first, $last, /* $length */] = $range;
 
         $body = $response->getBody();
 
@@ -115,11 +118,11 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
 
         while ($remaining >= $maxBufferLength && ! $body->eof()) {
             $contents = $body->read($maxBufferLength);
-            $remaining -= \strlen($contents);
+            $remaining -= strlen($contents);
 
             echo $contents;
 
-            if (connection_status() !== \CONNECTION_NORMAL) {
+            if (connection_status() !== CONNECTION_NORMAL) {
                 break;
             }
         }
