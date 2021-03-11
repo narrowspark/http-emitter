@@ -8,7 +8,7 @@ declare(strict_types=1);
  * For the full copyright and license information, please view
  * the LICENSE.md file that was distributed with this source code.
  *
- * @see https://github.com/narrowspark/php-library-template
+ * @see https://github.com/narrowspark/http-emitter
  */
 
 namespace Narrowspark\HttpEmitter\Tests;
@@ -27,6 +27,7 @@ use Laminas\Diactoros\Response\EmptyResponse;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Laminas\Diactoros\Response\JsonResponse;
 use Laminas\Diactoros\Response\TextResponse;
+use Narrowspark\HttpEmitter\AbstractSapiEmitter;
 use Narrowspark\HttpEmitter\SapiStreamEmitter;
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
 use Narrowspark\HttpEmitter\Tests\Helper\StreamMock;
@@ -46,20 +47,22 @@ use function strlen;
 final class SapiStreamEmitterTest extends AbstractEmitterTest
 {
     /** @var \Narrowspark\HttpEmitter\SapiStreamEmitter */
-    protected $emitter;
+    protected AbstractSapiEmitter $emitter;
 
     protected function setUp(): void
     {
         HeaderStack::reset();
+
+        HeaderStack::$headersSent = false;
+        HeaderStack::$headersFile = null;
+        HeaderStack::$headersLine = null;
 
         $this->emitter = new SapiStreamEmitter();
     }
 
     public function testEmitCallbackStreamResponse(): void
     {
-        $stream = new CallbackStream(static function (): string {
-            return 'it works';
-        });
+        $stream = new CallbackStream(static fn (): string => 'it works');
 
         $response = (new Response())
             ->withStatus(200)
@@ -108,39 +111,6 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
     }
 
     /**
-     * @psalm-return array<array-key, array{0: bool, 1: bool, 2: string, 3: int}>
-     */
-    public static function provideEmitStreamResponseCases(): iterable
-    {
-        return [
-            [true,   true,    '01234567890987654321',   10],
-            [true,   true,    '01234567890987654321',   20],
-            [true,   true,    '01234567890987654321',  100],
-            [true,   true, '01234567890987654321012',   10],
-            [true,   true, '01234567890987654321012',   20],
-            [true,   true, '01234567890987654321012',  100],
-            [true,  false,    '01234567890987654321',   10],
-            [true,  false,    '01234567890987654321',   20],
-            [true,  false,    '01234567890987654321',  100],
-            [true,  false, '01234567890987654321012',   10],
-            [true,  false, '01234567890987654321012',   20],
-            [true,  false, '01234567890987654321012',  100],
-            [false,  true,    '01234567890987654321',   10],
-            [false,  true,    '01234567890987654321',   20],
-            [false,  true,    '01234567890987654321',  100],
-            [false,  true, '01234567890987654321012',   10],
-            [false,  true, '01234567890987654321012',   20],
-            [false,  true, '01234567890987654321012',  100],
-            [false, false,    '01234567890987654321',   10],
-            [false, false,    '01234567890987654321',   20],
-            [false, false,    '01234567890987654321',  100],
-            [false, false, '01234567890987654321012',   10],
-            [false, false, '01234567890987654321012',   20],
-            [false, false, '01234567890987654321012',  100],
-        ];
-    }
-
-    /**
      * @param bool   $seekable        Indicates if stream is seekable
      * @param bool   $readable        Indicates if stream is readable
      * @param string $contents        Contents stored in stream
@@ -177,10 +147,10 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             $stream
                 ->expects(self::atLeastOnce())
                 ->method('rewind')
-                ->willReturnCallback([$streamMock, 'handleRewind']);
+                ->willReturnCallback(static fn (): bool => $streamMock->handleRewind());
             $stream
                 ->method('seek')
-                ->willReturnCallback([$streamMock, 'handleSeek']);
+                ->willReturnCallback(static fn ($offset, $whence): bool => $streamMock->handleSeek($offset, $whence));
         }
 
         if (! $seekable) {
@@ -194,10 +164,10 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
                 ->method('__toString');
             $stream
                 ->method('eof')
-                ->willReturnCallback([$streamMock, 'handleEof']);
+                ->willReturnCallback(static fn (): bool => $streamMock->handleEof());
             $stream
                 ->method('read')
-                ->willReturnCallback([$streamMock, 'handleRead']);
+                ->willReturnCallback(static fn ($length): string => $streamMock->handleRead($length));
         }
 
         if (! $readable) {
@@ -211,14 +181,14 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             $seekable
                 ? $stream
                     ->method('getContents')
-                    ->willReturnCallback([$streamMock, 'handleGetContents'])
+                    ->willReturnCallback(static fn (): string => $streamMock->handleGetContents())
                 : $stream
                     ->expects(self::never())
                     ->method('getContents');
 
             $stream
                 ->method('__toString')
-                ->willReturnCallback([$streamMock, 'handleToString']);
+                ->willReturnCallback(static fn (): string => $streamMock->handleToString());
         }
 
         $response = (new Response())
@@ -233,69 +203,6 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
         self::assertEquals($contents, $emittedContents);
         self::assertLessThanOrEqual($maxBufferLength, $peakBufferLength);
-    }
-
-    /**
-     * @psalm-return array<array-key, array{
-     *     0: bool,
-     *     1: bool,
-     *     2: array{0: string, 1: int, 2: int, 3: string},
-     *     3: string,
-     *     4: int
-     * }>
-     */
-    public static function provideEmitRangeStreamResponseCases(): iterable
-    {
-        return [
-            [true,   true, ['bytes', 10,  20, '*'],    '01234567890987654321',   5],
-            [true,   true, ['bytes', 10,  20, '*'],    '01234567890987654321',  10],
-            [true,   true, ['bytes', 10,  20, '*'],    '01234567890987654321', 100],
-            [true,   true, ['bytes', 10,  20, '*'], '01234567890987654321012',   5],
-            [true,   true, ['bytes', 10,  20, '*'], '01234567890987654321012',  10],
-            [true,   true, ['bytes', 10,  20, '*'], '01234567890987654321012', 100],
-            [true,   true, ['bytes', 10, 100, '*'],    '01234567890987654321',   5],
-            [true,   true, ['bytes', 10, 100, '*'],    '01234567890987654321',  10],
-            [true,   true, ['bytes', 10, 100, '*'],    '01234567890987654321', 100],
-            [true,   true, ['bytes', 10, 100, '*'], '01234567890987654321012',   5],
-            [true,   true, ['bytes', 10, 100, '*'], '01234567890987654321012',  10],
-            [true,   true, ['bytes', 10, 100, '*'], '01234567890987654321012', 100],
-            [true,  false, ['bytes', 10,  20, '*'],    '01234567890987654321',   5],
-            [true,  false, ['bytes', 10,  20, '*'],    '01234567890987654321',  10],
-            [true,  false, ['bytes', 10,  20, '*'],    '01234567890987654321', 100],
-            [true,  false, ['bytes', 10,  20, '*'], '01234567890987654321012',   5],
-            [true,  false, ['bytes', 10,  20, '*'], '01234567890987654321012',  10],
-            [true,  false, ['bytes', 10,  20, '*'], '01234567890987654321012', 100],
-            [true,  false, ['bytes', 10, 100, '*'],    '01234567890987654321',   5],
-            [true,  false, ['bytes', 10, 100, '*'],    '01234567890987654321',  10],
-            [true,  false, ['bytes', 10, 100, '*'],    '01234567890987654321', 100],
-            [true,  false, ['bytes', 10, 100, '*'], '01234567890987654321012',   5],
-            [true,  false, ['bytes', 10, 100, '*'], '01234567890987654321012',  10],
-            [true,  false, ['bytes', 10, 100, '*'], '01234567890987654321012', 100],
-            [false,  true, ['bytes', 10,  20, '*'],    '01234567890987654321',   5],
-            [false,  true, ['bytes', 10,  20, '*'],    '01234567890987654321',  10],
-            [false,  true, ['bytes', 10,  20, '*'],    '01234567890987654321', 100],
-            [false,  true, ['bytes', 10,  20, '*'], '01234567890987654321012',   5],
-            [false,  true, ['bytes', 10,  20, '*'], '01234567890987654321012',  10],
-            [false,  true, ['bytes', 10,  20, '*'], '01234567890987654321012', 100],
-            [false,  true, ['bytes', 10, 100, '*'],    '01234567890987654321',   5],
-            [false,  true, ['bytes', 10, 100, '*'],    '01234567890987654321',  10],
-            [false,  true, ['bytes', 10, 100, '*'],    '01234567890987654321', 100],
-            [false,  true, ['bytes', 10, 100, '*'], '01234567890987654321012',   5],
-            [false,  true, ['bytes', 10, 100, '*'], '01234567890987654321012',  10],
-            [false,  true, ['bytes', 10, 100, '*'], '01234567890987654321012', 100],
-            [false, false, ['bytes', 10,  20, '*'],    '01234567890987654321',   5],
-            [false, false, ['bytes', 10,  20, '*'],    '01234567890987654321',  10],
-            [false, false, ['bytes', 10,  20, '*'],    '01234567890987654321', 100],
-            [false, false, ['bytes', 10,  20, '*'], '01234567890987654321012',   5],
-            [false, false, ['bytes', 10,  20, '*'], '01234567890987654321012',  10],
-            [false, false, ['bytes', 10,  20, '*'], '01234567890987654321012', 100],
-            [false, false, ['bytes', 10, 100, '*'],    '01234567890987654321',   5],
-            [false, false, ['bytes', 10, 100, '*'],    '01234567890987654321',  10],
-            [false, false, ['bytes', 10, 100, '*'],    '01234567890987654321', 100],
-            [false, false, ['bytes', 10, 100, '*'], '01234567890987654321012',   5],
-            [false, false, ['bytes', 10, 100, '*'], '01234567890987654321012',  10],
-            [false, false, ['bytes', 10, 100, '*'], '01234567890987654321012', 100],
-        ];
     }
 
     /**
@@ -350,7 +257,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             ->willReturn($size);
         $stream
             ->method('tell')
-            ->willReturnCallback([$streamMock, 'handleTell']);
+            ->willReturnCallback(static fn (): int => $streamMock->handleTell());
 
         $stream
             ->expects(self::never())
@@ -360,7 +267,10 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             $stream
                 ->expects(self::atLeastOnce())
                 ->method('seek')
-                ->willReturnCallback([$streamMock, 'handleSeek']);
+                ->willReturnCallback(static fn (
+                    $offset,
+                    $whence
+                ): bool => $streamMock->handleSeek($offset, $whence));
         } else {
             $stream
                 ->expects(self::never())
@@ -376,11 +286,13 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
                 ->expects(self::atLeastOnce())
                 ->method('read')
                 ->with(self::isType('int'))
-                ->willReturnCallback([$streamMock, 'handleRead']);
+                ->willReturnCallback(static fn (
+                    $length
+                ): string => $streamMock->handleRead($length));
             $stream
                 ->expects(self::atLeastOnce())
                 ->method('eof')
-                ->willReturnCallback([$streamMock, 'handleEof']);
+                ->willReturnCallback(static fn (): bool => $streamMock->handleEof());
             $stream->expects(self::never())->method('getContents');
         } else {
             $stream->expects(self::never())->method('read');
@@ -388,7 +300,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             $stream
                 ->expects(self::atLeastOnce())
                 ->method('getContents')
-                ->willReturnCallback([$streamMock, 'handleGetContents']);
+                ->willReturnCallback(static fn (): string => $streamMock->handleGetContents());
         }
 
         $response = (new Response())
@@ -404,46 +316,6 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
 
         self::assertEquals(substr($contents, $first, $last - $first + 1), $emittedContents);
         self::assertLessThanOrEqual($maxBufferLength, $peakBufferLength);
-    }
-
-    /**
-     * @psalm-return array<array-key, array{
-     *     0: bool,
-     *     1: bool,
-     *     2: int,
-     *     3: int,
-     *     4: null|array{0: int, 1: int},
-     *     5: int
-     * }>
-     */
-    public static function provideEmitMemoryUsageCases(): iterable
-    {
-        return [
-            [true,   true,  1000,   20,       null,  512],
-            [true,   true,  1000,   20,       null, 4096],
-            [true,   true,  1000,   20,       null, 8192],
-            [true,  false,   100,  320,       null,  512],
-            [true,  false,   100,  320,       null, 4096],
-            [true,  false,   100,  320,       null, 8192],
-            [false,  true,  1000,   20,       null,  512],
-            [false,  true,  1000,   20,       null, 4096],
-            [false,  true,  1000,   20,       null, 8192],
-            [false, false,   100,  320,       null,  512],
-            [false, false,   100,  320,       null, 4096],
-            [false, false,   100,  320,       null, 8192],
-            [true,   true,  1000,   20,   [25, 75],  512],
-            [true,   true,  1000,   20,   [25, 75], 4096],
-            [true,   true,  1000,   20,   [25, 75], 8192],
-            [false,  true,  1000,   20,   [25, 75],  512],
-            [false,  true,  1000,   20,   [25, 75], 4096],
-            [false,  true,  1000,   20,   [25, 75], 8192],
-            [true,   true,  1000,   20, [250, 750],  512],
-            [true,   true,  1000,   20, [250, 750], 4096],
-            [true,   true,  1000,   20, [250, 750], 8192],
-            [false,  true,  1000,   20, [250, 750],  512],
-            [false,  true,  1000,   20, [250, 750], 4096],
-            [false,  true,  1000,   20, [250, 750], 8192],
-        ];
     }
 
     /**
@@ -467,12 +339,16 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
         ?array $rangeBlocks,
         int $maxBufferLength
     ): void {
+        HeaderStack::$headersSent = false;
+
         $sizeBytes = $maxBufferLength * $sizeBlocks;
         $maxAllowedMemoryUsage = $maxBufferLength * $maxAllowedBlocks;
         $peakBufferLength = 0;
         $peakMemoryUsage = 0;
 
         $position = 0;
+        $first = 0;
+        $last = 0;
 
         if ($rangeBlocks !== null) {
             $first = $maxBufferLength * $rangeBlocks[0];
@@ -517,24 +393,29 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
             ->willReturn($readable);
         $stream
             ->method('eof')
-            ->willReturnCallback([$streamMock, 'handleEof']);
+            ->willReturnCallback(static fn (): bool => $streamMock->handleEof());
 
         if ($seekable) {
             $stream
                 ->method('seek')
-                ->willReturnCallback([$streamMock, 'handleSeek']);
+                ->willReturnCallback(static fn (
+                    $offset,
+                    $whence
+                ): bool => $streamMock->handleSeek($offset, $whence));
         }
 
         if ($readable) {
             $stream
                 ->method('read')
-                ->willReturnCallback([$streamMock, 'handleRead']);
+                ->willReturnCallback(static fn (
+                    $length
+                ): string => $streamMock->handleRead($length));
         }
 
         if (! $readable) {
             $stream
                 ->method('getContents')
-                ->willReturnCallback([$streamMock, 'handleGetContents']);
+                ->willReturnCallback(static fn (): string => $streamMock->handleGetContents());
         }
 
         $response = (new Response())
@@ -606,22 +487,6 @@ HTML;
     }
 
     /**
-     * @psalm-return array<array-key, array>
-     */
-    public static function provideEmitJsonResponseCases(): iterable
-    {
-        return [
-            [0.1],
-            ['test'],
-            [true],
-            [1],
-            [['key1' => 'value1']],
-            [null],
-            [[[0.1, 0.2], ['test', 'test2'], [true, false], ['key1' => 'value1'], [null]]],
-        ];
-    }
-
-    /**
      * @param null|array|string $contents Contents stored in stream
      *
      * @psalm-param null|array<array-key, string|bool>|string $contents
@@ -657,18 +522,6 @@ HTML;
     }
 
     /**
-     * @psalm-return array<array-key, array{0: string, 1: string, 2: string}>
-     */
-    public static function provideContentRangeCases(): iterable
-    {
-        return [
-            ['bytes 0-2/*', 'Hello world', 'Hel'],
-            ['bytes 3-6/*', 'Hello world', 'lo w'],
-            ['items 0-0/1', 'Hello world', 'Hello world'],
-        ];
-    }
-
-    /**
      * @dataProvider provideContentRangeCases
      */
     public function testContentRange(string $header, string $body, string $expected): void
@@ -688,9 +541,7 @@ HTML;
 
     public function testContentRangeUnseekableBody(): void
     {
-        $body = new CallbackStream(static function (): string {
-            return 'Hello world';
-        });
+        $body = new CallbackStream(static fn (): string => 'Hello world');
         $response = (new Response())
             ->withBody($body)
             ->withHeader('Content-Range', 'bytes 3-6/*');
@@ -700,5 +551,260 @@ HTML;
         $this->emitter->emit($response);
 
         self::assertEquals('lo w', ob_get_clean());
+    }
+
+    /**
+     * @psalm-return iterable<array{0: bool, 1: bool, 2: string, 3: int}>
+     */
+    public static function provideEmitStreamResponseCases(): iterable
+    {
+        yield [true,   true,    '01234567890987654321',   10];
+
+        yield [true,   true,    '01234567890987654321',   20];
+
+        yield [true,   true,    '01234567890987654321',  100];
+
+        yield [true,   true, '01234567890987654321012',   10];
+
+        yield [true,   true, '01234567890987654321012',   20];
+
+        yield [true,   true, '01234567890987654321012',  100];
+
+        yield [true,  false,    '01234567890987654321',   10];
+
+        yield [true,  false,    '01234567890987654321',   20];
+
+        yield [true,  false,    '01234567890987654321',  100];
+
+        yield [true,  false, '01234567890987654321012',   10];
+
+        yield [true,  false, '01234567890987654321012',   20];
+
+        yield [true,  false, '01234567890987654321012',  100];
+
+        yield [false,  true,    '01234567890987654321',   10];
+
+        yield [false,  true,    '01234567890987654321',   20];
+
+        yield [false,  true,    '01234567890987654321',  100];
+
+        yield [false,  true, '01234567890987654321012',   10];
+
+        yield [false,  true, '01234567890987654321012',   20];
+
+        yield [false,  true, '01234567890987654321012',  100];
+
+        yield [false, false,    '01234567890987654321',   10];
+
+        yield [false, false,    '01234567890987654321',   20];
+
+        yield [false, false,    '01234567890987654321',  100];
+
+        yield [false, false, '01234567890987654321012',   10];
+
+        yield [false, false, '01234567890987654321012',   20];
+
+        yield [false, false, '01234567890987654321012',  100];
+    }
+
+    /**
+     * @psalm-return iterable<array{
+     *     0: bool,
+     *     1: bool,
+     *     2: array{0: string, 1: int, 2: int, 3: string},
+     *     3: string,
+     *     4: int
+     * }>
+     */
+    public static function provideEmitRangeStreamResponseCases(): iterable
+    {
+        yield [true,   true, ['bytes', 10,  20, '*'],    '01234567890987654321',   5];
+
+        yield [true,   true, ['bytes', 10,  20, '*'],    '01234567890987654321',  10];
+
+        yield [true,   true, ['bytes', 10,  20, '*'],    '01234567890987654321', 100];
+
+        yield [true,   true, ['bytes', 10,  20, '*'], '01234567890987654321012',   5];
+
+        yield [true,   true, ['bytes', 10,  20, '*'], '01234567890987654321012',  10];
+
+        yield [true,   true, ['bytes', 10,  20, '*'], '01234567890987654321012', 100];
+
+        yield [true,   true, ['bytes', 10, 100, '*'],    '01234567890987654321',   5];
+
+        yield [true,   true, ['bytes', 10, 100, '*'],    '01234567890987654321',  10];
+
+        yield [true,   true, ['bytes', 10, 100, '*'],    '01234567890987654321', 100];
+
+        yield [true,   true, ['bytes', 10, 100, '*'], '01234567890987654321012',   5];
+
+        yield [true,   true, ['bytes', 10, 100, '*'], '01234567890987654321012',  10];
+
+        yield [true,   true, ['bytes', 10, 100, '*'], '01234567890987654321012', 100];
+
+        yield [true,  false, ['bytes', 10,  20, '*'],    '01234567890987654321',   5];
+
+        yield [true,  false, ['bytes', 10,  20, '*'],    '01234567890987654321',  10];
+
+        yield [true,  false, ['bytes', 10,  20, '*'],    '01234567890987654321', 100];
+
+        yield [true,  false, ['bytes', 10,  20, '*'], '01234567890987654321012',   5];
+
+        yield [true,  false, ['bytes', 10,  20, '*'], '01234567890987654321012',  10];
+
+        yield [true,  false, ['bytes', 10,  20, '*'], '01234567890987654321012', 100];
+
+        yield [true,  false, ['bytes', 10, 100, '*'],    '01234567890987654321',   5];
+
+        yield [true,  false, ['bytes', 10, 100, '*'],    '01234567890987654321',  10];
+
+        yield [true,  false, ['bytes', 10, 100, '*'],    '01234567890987654321', 100];
+
+        yield [true,  false, ['bytes', 10, 100, '*'], '01234567890987654321012',   5];
+
+        yield [true,  false, ['bytes', 10, 100, '*'], '01234567890987654321012',  10];
+
+        yield [true,  false, ['bytes', 10, 100, '*'], '01234567890987654321012', 100];
+
+        yield [false,  true, ['bytes', 10,  20, '*'],    '01234567890987654321',   5];
+
+        yield [false,  true, ['bytes', 10,  20, '*'],    '01234567890987654321',  10];
+
+        yield [false,  true, ['bytes', 10,  20, '*'],    '01234567890987654321', 100];
+
+        yield [false,  true, ['bytes', 10,  20, '*'], '01234567890987654321012',   5];
+
+        yield [false,  true, ['bytes', 10,  20, '*'], '01234567890987654321012',  10];
+
+        yield [false,  true, ['bytes', 10,  20, '*'], '01234567890987654321012', 100];
+
+        yield [false,  true, ['bytes', 10, 100, '*'],    '01234567890987654321',   5];
+
+        yield [false,  true, ['bytes', 10, 100, '*'],    '01234567890987654321',  10];
+
+        yield [false,  true, ['bytes', 10, 100, '*'],    '01234567890987654321', 100];
+
+        yield [false,  true, ['bytes', 10, 100, '*'], '01234567890987654321012',   5];
+
+        yield [false,  true, ['bytes', 10, 100, '*'], '01234567890987654321012',  10];
+
+        yield [false,  true, ['bytes', 10, 100, '*'], '01234567890987654321012', 100];
+
+        yield [false, false, ['bytes', 10,  20, '*'],    '01234567890987654321',   5];
+
+        yield [false, false, ['bytes', 10,  20, '*'],    '01234567890987654321',  10];
+
+        yield [false, false, ['bytes', 10,  20, '*'],    '01234567890987654321', 100];
+
+        yield [false, false, ['bytes', 10,  20, '*'], '01234567890987654321012',   5];
+
+        yield [false, false, ['bytes', 10,  20, '*'], '01234567890987654321012',  10];
+
+        yield [false, false, ['bytes', 10,  20, '*'], '01234567890987654321012', 100];
+
+        yield [false, false, ['bytes', 10, 100, '*'],    '01234567890987654321',   5];
+
+        yield [false, false, ['bytes', 10, 100, '*'],    '01234567890987654321',  10];
+
+        yield [false, false, ['bytes', 10, 100, '*'],    '01234567890987654321', 100];
+
+        yield [false, false, ['bytes', 10, 100, '*'], '01234567890987654321012',   5];
+
+        yield [false, false, ['bytes', 10, 100, '*'], '01234567890987654321012',  10];
+
+        yield [false, false, ['bytes', 10, 100, '*'], '01234567890987654321012', 100];
+    }
+
+    /**
+     * @psalm-return iterable<array{
+     *     0: bool,
+     *     1: bool,
+     *     2: int,
+     *     3: int,
+     *     4: null|array{0: int, 1: int},
+     *     5: int
+     * }>
+     */
+    public static function provideEmitMemoryUsageCases(): iterable
+    {
+        yield [true,   true,  1000,   20,       null,  512];
+
+        yield [true,   true,  1000,   20,       null, 4096];
+
+        yield [true,   true,  1000,   20,       null, 8192];
+
+        yield [true,  false,   100,  320,       null,  512];
+
+        yield [true,  false,   100,  320,       null, 4096];
+
+        yield [true,  false,   100,  320,       null, 8192];
+
+        yield [false,  true,  1000,   20,       null,  512];
+
+        yield [false,  true,  1000,   20,       null, 4096];
+
+        yield [false,  true,  1000,   20,       null, 8192];
+
+        yield [false, false,   100,  320,       null,  512];
+
+        yield [false, false,   100,  320,       null, 4096];
+
+        yield [false, false,   100,  320,       null, 8192];
+
+        yield [true,   true,  1000,   20,   [25, 75],  512];
+
+        yield [true,   true,  1000,   20,   [25, 75], 4096];
+
+        yield [true,   true,  1000,   20,   [25, 75], 8192];
+
+        yield [false,  true,  1000,   20,   [25, 75],  512];
+
+        yield [false,  true,  1000,   20,   [25, 75], 4096];
+
+        yield [false,  true,  1000,   20,   [25, 75], 8192];
+
+        yield [true,   true,  1000,   20, [250, 750],  512];
+
+        yield [true,   true,  1000,   20, [250, 750], 4096];
+
+        yield [true,   true,  1000,   20, [250, 750], 8192];
+
+        yield [false,  true,  1000,   20, [250, 750],  512];
+
+        yield [false,  true,  1000,   20, [250, 750], 4096];
+
+        yield [false,  true,  1000,   20, [250, 750], 8192];
+    }
+
+    /**
+     * @psalm-return iterable<array<array-key, int|float|bool|string|array|null>>
+     */
+    public static function provideEmitJsonResponseCases(): iterable
+    {
+        yield [0.1];
+
+        yield ['test'];
+
+        yield [true];
+
+        yield [1];
+
+        yield [['key1' => 'value1']];
+
+        yield [null];
+
+        yield [[[0.1, 0.2], ['test', 'test2'], [true, false], ['key1' => 'value1'], [null]]];
+    }
+
+    /**
+     * @psalm-return iterable<array<array-key, string>>
+     */
+    public static function provideContentRangeCases(): iterable
+    {
+        yield ['bytes 0-2/*', 'Hello world', 'Hel'];
+
+        yield ['bytes 3-6/*', 'Hello world', 'lo w'];
+
+        yield ['items 0-0/1', 'Hello world', 'Hello world'];
     }
 }

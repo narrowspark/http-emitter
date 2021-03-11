@@ -114,5 +114,5 @@ jobs:
         run: composer update --no-progress --no-interaction --ansi --prefer-lowest --prefer-stable
 
       - name: "Rector lint"
-        run: composer rector -- --no-progress-bar
+        run: composer rector -- --no-progress-bar --clear-cache
 

@@ -16,26 +16,27 @@
     errorLevel='8'
 >
     <issueHandlers>
-        <LessSpecificReturnType errorLevel="info" />
+        <LessSpecificReturnType errorLevel="info"/>
     </issueHandlers>
 
     <plugins>
-        <pluginClass class="Psalm\PhpUnitPlugin\Plugin" />
+        <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
+        <pluginClass class="Psalm\MockeryPlugin\Plugin"/>
     </plugins>
 
     <projectFiles>
-        <directory name="src" />
-        <directory name="tests" />
+        <directory name="src"/>
+        <directory name="tests"/>
         <ignoreFiles>
-            <directory name="vendor" />
-            <directory name=".build" />
-            <directory name=".docker" />
-            <directory name=".github" />
+            <directory name="vendor"/>
+            <directory name=".build"/>
+            <directory name=".docker"/>
+            <directory name=".github"/>
         </ignoreFiles>
     </projectFiles>
 
     <issueHandlers>
-        <PossiblyUndefinedIntArrayOffset errorLevel="error" />
-        <PossiblyUndefinedStringArrayOffset errorLevel="error" />
+        <PossiblyUndefinedIntArrayOffset errorLevel="error"/>
+        <PossiblyUndefinedStringArrayOffset errorLevel="error"/>
     </issueHandlers>
 </psalm>

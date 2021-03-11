@@ -8,31 +8,33 @@ declare(strict_types=1);
  * For the full copyright and license information, please view
  * the LICENSE.md file that was distributed with this source code.
  *
- * @see https://github.com/narrowspark/php-library-template
+ * @see https://github.com/narrowspark/http-emitter
  */
 
 namespace Narrowspark\HttpEmitter;
 
 use Psr\Http\Message\ResponseInterface;
 use const CONNECTION_NORMAL;
-use function is_array;
 use function Safe\preg_match;
 use function Safe\substr;
 use function strlen;
 
+/**
+ * @see \Narrowspark\HttpEmitter\Tests\SapiStreamEmitterTest
+ */
 final class SapiStreamEmitter extends AbstractSapiEmitter
 {
+    private const CONTENT_PATTERN = '/(?P<unit>[\w]+)\s+(?P<first>\d+)-(?P<last>\d+)\/(?P<length>\d+|\*)/';
+
     /**
      * Maximum output buffering size for each iteration.
-     *
-     * @var int
      */
-    protected $maxBufferLength = 8192;
+    protected int $maxBufferLength = 8192;
 
     /**
      * Set the maximum output buffering level.
      */
-    public function setMaxBufferLength(int $maxBufferLength): self
+    public function setMaxBufferLength(int $maxBufferLength): static
     {
         $this->maxBufferLength = $maxBufferLength;
 
@@ -55,7 +57,7 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
 
         $range = $this->parseContentRange($response->getHeaderLine('Content-Range'));
 
-        if (is_array($range) && $range[0] === 'bytes') {
+        if ($range !== null && $range[0] === 'bytes') {
             $this->emitBodyRange($range, $response, $this->maxBufferLength);
         } else {
             $this->emitBody($response, $this->maxBufferLength);
@@ -65,35 +67,29 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
     }
 
     /**
-     * Sends the message body of the response.
+     * Parse content-range header
+     * http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.16.
+     *
+     * @psalm-return null|array{0: string, 1: int, 2: int, 3: string|int} returns null if no content range or an invalid content range is provided
      */
-    private function emitBody(ResponseInterface $response, int $maxBufferLength): void
+    private function parseContentRange(string $header): ?array
     {
-        $body = $response->getBody();
-
-        if ($body->isSeekable()) {
-            $body->rewind();
+        if (preg_match(self::CONTENT_PATTERN, $header, $matches) === 1) {
+            return [
+                (string) $matches['unit'],
+                (int) $matches['first'],
+                (int) $matches['last'],
+                $matches['length'] === '*' ? '*' : (int) $matches['length'],
+            ];
         }
 
-        if (! $body->isReadable()) {
-            echo $body;
-
-            return;
-        }
-
-        while (! $body->eof()) {
-            echo $body->read($maxBufferLength);
-
-            if (connection_status() !== CONNECTION_NORMAL) {
-                break;
-            }
-        }
+        return null;
     }
 
     /**
      * Emit a range of the message body.
      *
-     * @psalm-param array{0: mixed, 1: int, 2: int, 3: '*'|int} $range
+     * @psalm-param array{0: string, 1: int, 2: int, 3: string|int} $range
      */
     private function emitBodyRange(array $range, ResponseInterface $response, int $maxBufferLength): void
     {
@@ -127,31 +123,40 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
             }
         }
 
-        if ($remaining > 0 && ! $body->eof()) {
-            echo $body->read($remaining);
+        if ($remaining <= 0) {
+            return;
         }
+
+        if ($body->eof()) {
+            return;
+        }
+
+        echo $body->read($remaining);
     }
 
     /**
-     * Parse content-range header
-     * http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.16.
-     *
-     * @param string $header
-     *
-     * @return null|array{0: mixed, 1: int, 2: int, 3: '*'|int} [unit, first, last, length]; returns false if no
-     *                       content range or an invalid content range is provided
+     * Sends the message body of the response.
      */
-    private function parseContentRange($header): ?array
+    private function emitBody(ResponseInterface $response, int $maxBufferLength): void
     {
-        if (preg_match('/(?P<unit>[\w]+)\s+(?P<first>\d+)-(?P<last>\d+)\/(?P<length>\d+|\*)/', $header, $matches) === 1) {
-            return [
-                $matches['unit'],
-                (int) $matches['first'],
-                (int) $matches['last'],
-                $matches['length'] === '*' ? '*' : (int) $matches['length'],
-            ];
+        $body = $response->getBody();
+
+        if ($body->isSeekable()) {
+            $body->rewind();
         }
 
-        return null;
+        if (! $body->isReadable()) {
+            echo $body;
+
+            return;
+        }
+
+        while (! $body->eof()) {
+            echo $body->read($maxBufferLength);
+
+            if (connection_status() !== CONNECTION_NORMAL) {
+                break;
+            }
+        }
     }
 }

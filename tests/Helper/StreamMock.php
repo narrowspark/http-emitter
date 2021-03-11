@@ -8,7 +8,7 @@ declare(strict_types=1);
  * For the full copyright and license information, please view
  * the LICENSE.md file that was distributed with this source code.
  *
- * @see https://github.com/narrowspark/php-library-template
+ * @see https://github.com/narrowspark/http-emitter
  */
 
 namespace Narrowspark\HttpEmitter\Tests\Helper;
@@ -20,27 +20,18 @@ use function strlen;
 
 final class StreamMock
 {
-    /** @var callable|string */
-    private $contents;
-
-    /** @var int */
-    private $position;
-
-    /** @var int */
-    private $size;
-
-    /** @var null|callable */
-    private $trackPeakBufferLength;
-
     /**
      * @param callable|string $contents
+     * @param null|callable   $trackPeakBufferLength
+     *
+     * @noRector
      */
-    public function __construct($contents, int $size, int $startPosition, ?callable $trackPeakBufferLength = null)
-    {
-        $this->contents = $contents;
-        $this->size = $size;
-        $this->position = $startPosition;
-        $this->trackPeakBufferLength = $trackPeakBufferLength;
+    public function __construct(
+        private $contents,
+        private int $size,
+        private int $position,
+        private $trackPeakBufferLength = null
+    ) {
     }
 
     public function handleToString(): string
@@ -60,6 +51,9 @@ final class StreamMock
         return $this->position >= $this->size;
     }
 
+    /**
+     * @noRector \Rector\DeadCode\Rector\ClassMethod\RemoveUnusedParameterRector
+     */
     public function handleSeek(int $offset, ?int $whence = SEEK_SET): bool
     {
         if ($offset >= $this->size) {

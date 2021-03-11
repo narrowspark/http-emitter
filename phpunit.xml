@@ -19,7 +19,7 @@
     beStrictAboutTestsThatDoNotTestAnything="true"
     beStrictAboutResourceUsageDuringSmallTests="true"
     beStrictAboutChangesToGlobalState="true"
-    beStrictAboutOutputDuringTests="true"
+    beStrictAboutOutputDuringTests="false"
     beStrictAboutTodoAnnotatedTests="true"
     stopOnError="false"
     stopOnFailure="false"

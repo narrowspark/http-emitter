@@ -8,7 +8,7 @@ declare(strict_types=1);
  * For the full copyright and license information, please view
  * the LICENSE.md file that was distributed with this source code.
  *
- * @see https://github.com/narrowspark/php-library-template
+ * @see https://github.com/narrowspark/http-emitter
  */
 
 namespace Narrowspark\HttpEmitter\Tests\Helper;
@@ -17,21 +17,17 @@ final class HeaderStack
 {
     /**
      * Check if headers was sent.
-     *
-     * @var bool
      */
-    public static $headersSent = false;
+    public static bool $headersSent = false;
 
-    /** @var null|string */
-    public static $headersFile;
+    public static ?string $headersFile = null;
 
-    /** @var null|int */
-    public static $headersLine;
+    public static ?int $headersLine = null;
 
     /**
      * @psalm-var array<array-key, array<string, bool|int|string|null>>
      */
-    private static $data = [];
+    private static array $data = [];
 
     /**
      * Reset state.
@@ -55,6 +51,8 @@ final class HeaderStack
      * Return the current header stack.
      *
      * @psalm-return array<array-key, array<string, bool|int|string|null>>
+     *
+     * @return array<mixed, array<null|bool|int|string>>
      */
     public static function stack(): array
     {
@@ -63,10 +61,8 @@ final class HeaderStack
 
     /**
      * Verify if there's a header line on the stack.
-     *
-     * @param string $header
      */
-    public static function has($header): bool
+    public static function has(string $header): bool
     {
         foreach (self::$data as $item) {
             if ($item['header'] === $header) {

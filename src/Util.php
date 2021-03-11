@@ -8,7 +8,7 @@ declare(strict_types=1);
  * For the full copyright and license information, please view
  * the LICENSE.md file that was distributed with this source code.
  *
- * @see https://github.com/narrowspark/php-library-template
+ * @see https://github.com/narrowspark/http-emitter
  */
 
 namespace Narrowspark\HttpEmitter;
@@ -21,6 +21,9 @@ use function count;
 use function Safe\ob_end_clean;
 use function Safe\ob_end_flush;
 
+/**
+ * @see \Narrowspark\HttpEmitter\Tests\UtilTest
+ */
 final class Util
 {
     /**
@@ -37,13 +40,15 @@ final class Util
      */
     public static function injectContentLength(ResponseInterface $response): ResponseInterface
     {
+        if ($response->hasHeader('Content-Length')) {
+            return $response;
+        }
+
         $responseBody = $response->getBody();
 
         // PSR-7 indicates int OR null for the stream size; for null values,
         // we will not auto-inject the Content-Length.
-        if (! $response->hasHeader('Content-Length')
-            && $responseBody->getSize() !== null
-        ) {
+        if ($responseBody->getSize() !== null) {
             /** @var ResponseInterface $response */
             $response = $response->withHeader('Content-Length', (string) $responseBody->getSize());
         }
@@ -65,9 +70,7 @@ final class Util
         $level = count($status);
         $flags = PHP_OUTPUT_HANDLER_REMOVABLE | ($flush ? PHP_OUTPUT_HANDLER_FLUSHABLE : PHP_OUTPUT_HANDLER_CLEANABLE);
 
-        $s = $status[$level];
-
-        while (--$level > $maxBufferLevel && (bool) ($s) && ($s['del'] ?? ! isset($s['flags']) || $flags === ($s['flags'] & $flags))) {
+        while ($level-- > $maxBufferLevel && isset($status[$level]) && ($status[$level]['del'] ?? ! isset($status[$level]['flags']) || $flags === ($status[$level]['flags'] & $flags))) {
             if ($flush) {
                 ob_end_flush();
             } else {

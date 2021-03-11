@@ -26,8 +26,8 @@ jobs:
 
     env:
       key: "mutation-v1" # change key (version) to clear cache
-      min-covered-msi: 100
-      min-msi: 100
+      min-covered-msi: 70
+      min-msi: 49
       extensions: "mbstring"
       ini-values: "date.timezone=Europe/Berlin, assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=0, opcache.optimization_level=-1, opcache.jit=1255, opcache.jit_buffer_size=32M, serialize_precision=14"
       tools: "composer"

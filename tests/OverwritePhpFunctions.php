@@ -8,8 +8,10 @@ declare(strict_types=1);
  * For the full copyright and license information, please view
  * the LICENSE.md file that was distributed with this source code.
  *
- * @see https://github.com/narrowspark/php-library-template
+ * @see https://github.com/narrowspark/http-emitter
  */
+
+/** @noRector \Rector\PSR4\Rector\FileWithoutNamespace\NormalizeNamespaceByPSR4ComposerAutoloadRector */
 
 namespace Narrowspark\HttpEmitter;
 
@@ -20,12 +22,9 @@ if (! function_exists('Narrowspark\\HttpEmitter\\headers_sent')) {
     /**
      * Have headers been sent?
      *
-     * @param null|string $file
-     * @param null|int    $line
-     *
      * @return bool false
      */
-    function headers_sent(&$file = null, &$line = null): bool
+    function headers_sent(?string &$file = null, ?int &$line = null): bool
     {
         $sent = HeaderStack::$headersSent;
 
@@ -41,12 +40,8 @@ if (! function_exists('Narrowspark\\HttpEmitter\\headers_sent')) {
 if (! function_exists('Narrowspark\\HttpEmitter\\header')) {
     /**
      * Emit a header, without creating actual output artifacts.
-     *
-     * @param string   $string
-     * @param bool     $replace
-     * @param null|int $statusCode
      */
-    function header($string, $replace = true, $statusCode = null): void
+    function header(string $string, bool $replace = true, ?int $statusCode = null): void
     {
         HeaderStack::push(
             [

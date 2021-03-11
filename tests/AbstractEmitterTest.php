@@ -8,7 +8,7 @@ declare(strict_types=1);
  * For the full copyright and license information, please view
  * the LICENSE.md file that was distributed with this source code.
  *
- * @see https://github.com/narrowspark/php-library-template
+ * @see https://github.com/narrowspark/http-emitter
  */
 
 namespace Narrowspark\HttpEmitter\Tests;
@@ -22,10 +22,10 @@ namespace Narrowspark\HttpEmitter\Tests;
  */
 
 use Laminas\Diactoros\Response;
+use Narrowspark\HttpEmitter\AbstractSapiEmitter;
 use Narrowspark\HttpEmitter\Contract\RuntimeException;
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
 use function Safe\sprintf;
 
 /**
@@ -33,20 +33,7 @@ use function Safe\sprintf;
  */
 abstract class AbstractEmitterTest extends TestCase
 {
-    /** @var \Narrowspark\HttpEmitter\AbstractSapiEmitter */
-    protected $emitter;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        HeaderStack::reset();
-
-        HeaderStack::$headersSent = false;
-        HeaderStack::$headersFile = null;
-        HeaderStack::$headersLine = null;
-    }
+    protected AbstractSapiEmitter $emitter;
 
     final public function testEmitThrowsSentHeadersException(): void
     {
@@ -132,7 +119,7 @@ abstract class AbstractEmitterTest extends TestCase
         self::assertSame($expectedStack, HeaderStack::stack());
     }
 
-    private function arrangeStatus200AndTypeTextResponse(): ResponseInterface
+    private function arrangeStatus200AndTypeTextResponse(): Response
     {
         $response = new Response();
         $response = $response

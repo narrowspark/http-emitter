@@ -8,7 +8,7 @@ declare(strict_types=1);
  * For the full copyright and license information, please view
  * the LICENSE.md file that was distributed with this source code.
  *
- * @see https://github.com/narrowspark/php-library-template
+ * @see https://github.com/narrowspark/http-emitter
  */
 
 namespace Narrowspark\HttpEmitter\Tests;
@@ -39,6 +39,10 @@ final class SapiEmitterTest extends AbstractEmitterTest
     {
         HeaderStack::reset();
 
+        HeaderStack::$headersSent = false;
+        HeaderStack::$headersFile = null;
+        HeaderStack::$headersLine = null;
+
         $this->emitter = new SapiEmitter();
     }
 
@@ -57,7 +61,9 @@ final class SapiEmitterTest extends AbstractEmitterTest
             ->withBody($stream);
 
         ob_start();
+
         $this->emitter->emit($response);
+
         ob_end_clean();
 
         foreach (HeaderStack::stack() as $header) {

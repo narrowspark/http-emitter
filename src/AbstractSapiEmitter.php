@@ -8,7 +8,7 @@ declare(strict_types=1);
  * For the full copyright and license information, please view
  * the LICENSE.md file that was distributed with this source code.
  *
- * @see https://github.com/narrowspark/php-library-template
+ * @see https://github.com/narrowspark/http-emitter
  */
 
 namespace Narrowspark\HttpEmitter;
@@ -57,9 +57,15 @@ abstract class AbstractSapiEmitter
             ));
         }
 
-        if (ob_get_level() > 0 && ob_get_length() > 0) {
-            throw new RuntimeException('Output has been emitted previously; cannot emit response.');
+        if (ob_get_level() <= 0) {
+            return;
         }
+
+        if (ob_get_length() <= 0) {
+            return;
+        }
+
+        throw new RuntimeException('Output has been emitted previously; cannot emit response.');
     }
 
     /**
