@@ -1,22 +1,23 @@
-version: '3'
+version: "3"
+
 services:
-  php80_64:
-    build:
-      context: ./.docker/php/
-      args:
-        NAMESPACE: "php"
-        PHP_VERSION: "8.0.2"
-        XDEBUG_VERSION: "3.0.3"
-        INSTALL_XDEBUG: "true"
-    expose:
-      - 9000
-    volumes:
-      - data:/var/www/package
-    tty: true
+    php80_64:
+        build:
+            context: "./.docker/php/"
+            args:
+                NAMESPACE: "php"
+                PHP_VERSION: "8.0.2"
+                XDEBUG_VERSION: "3.0.3"
+                INSTALL_XDEBUG: "true"
+        expose:
+            - "9000"
+        volumes:
+            - "data:/var/www/package"
+        tty: true
 
 volumes:
-  data:
-    driver: lebokus/bindfs:latest
-    driver_opts:
-      sourcePath: "${PWD}"
-      map: "${UID:-1000}/0:@${UID:-1000}/@0"
+    data:
+        driver: "lebokus/bindfs:latest"
+        driver_opts:
+            sourcePath: "${PWD}"
+            map: "${UID:-1000}/0:@${UID:-1000}/@0"
