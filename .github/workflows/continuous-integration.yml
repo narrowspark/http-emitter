@@ -2,292 +2,286 @@
 
 name: "Continuous Integration"
 
-on:
-  push:
-    paths:
-      - "**.php"
-      - "composer.json"
-  pull_request:
-    paths:
-      - "**.php"
-      - "composer.json"
+on: # yamllint disable-line rule:truthy
+    push:
+        paths:
+            - "**.php"
+            - "composer.json"
+    pull_request:
+        paths:
+            - "**.php"
+            - "composer.json"
 
 jobs:
-  LinuxIntegration:
-    name: "PHP ${{ matrix.php-versions }} Test on ubuntu-latest OS with ${{ matrix.dependencies }} dependencies"
+    LinuxIntegration:
+        name: "PHP ${{ matrix.php-versions }} Test on ubuntu-latest OS with ${{ matrix.dependencies }} dependencies"
 
-    runs-on: ubuntu-latest
+        runs-on: "ubuntu-latest"
 
-    strategy:
-      matrix:
-        php-versions: [ "8.0" ]
-        dependencies: [ "highest", "lowest", "locked" ]
-        compiler: [ "default" ]
+        strategy:
+            matrix:
+                php-versions: ["8.0"]
+                dependencies: ["highest", "lowest", "locked"]
 
-    env:
-      key: "continuous-integration-linux-v1" # change key (version) to clear cache
-      extensions: "mbstring"
-      ini-values: "date.timezone=Europe/Berlin, opcache.enable_cli=0, serialize_precision=14"
-      tools: "composer"
-
-    steps:
-      - name: "Git checkout"
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
         env:
-          GIT_COMMITTER_NAME: "GitHub Actions Shell"
-          GIT_AUTHOR_NAME: "GitHub Actions Shell"
-          EMAIL: "github-actions[bot]@users.noreply.github.com"
+            key: "continuous-integration-linux-v1" # change key (version) to clear cache
+            extensions: "mbstring"
+            ini-values: "date.timezone=Europe/Berlin, opcache.enable_cli=0, serialize_precision=14"
+            tools: "composer"
 
-      - name: "Override PHP ini values for JIT compiler"
-        if: matrix.compiler == 'jit'
-        run: echo "PHP_INI_VALUES::assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=0, opcache.optimization_level=-1, opcache.jit=1255, opcache.jit_buffer_size=32M" >> $GITHUB_ENV
+        steps:
+            - name: "Git checkout"
+              uses: "actions/checkout@v2"
+              with:
+                  fetch-depth: 2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-      - name: "Setup cache environment"
-        id: cache-env
-        uses: shivammathur/cache-extensions@v1
-        with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: ${{ env.extensions }}
-          key: ${{ env.key }}
+            - name: "Setup cache environment"
+              id: "cache-env"
+              uses: "shivammathur/cache-extensions@v1"
+              with:
+                  php-version: "${{ matrix.php-versions }}"
+                  extensions: "${{ env.extensions }}"
+                  key: "${{ env.key }}"
 
-      - name: "Cache extensions"
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.cache-env.outputs.dir }}
-          key: ${{ steps.cache-env.outputs.key }}
-          restore-keys: ${{ steps.cache-env.outputs.key }}
+            - name: "Cache extensions"
+              uses: "actions/cache@v2"
+              with:
+                  path: "${{ steps.cache-env.outputs.dir }}"
+                  key: "${{ steps.cache-env.outputs.key }}"
+                  restore-keys: "${{ steps.cache-env.outputs.key }}"
 
-      - name: "Setup PHP"
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: ${{ env.extensions }}
-          ini-values: ${{ env.ini-values }}
-          tools: ${{ env.tools }}
-          coverage: "pcov"
+            - name: "Setup PHP"
+              uses: "shivammathur/setup-php@v2"
+              with:
+                  php-version: "${{ matrix.php-versions }}"
+                  extensions: "${{ env.extensions }}"
+                  ini-values: "${{ env.ini-values }}"
+                  tools: "${{ env.tools }}"
+                  coverage: "pcov"
 
-      - name: "Setup Problem Matchers for PHP"
-        run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+            - name: "Setup Problem Matchers for PHP"
+              run: "echo '::add-matcher::${{ runner.tool_cache }}/php.json'"
 
-      - name: "Check PHP Version"
-        run: php -v
+            - name: "Check PHP Version"
+              run: "php -v"
 
-      - name: "List all php extensions with versions"
-        run: php -r 'foreach (get_loaded_extensions() as $extension) echo $extension . " " . phpversion($extension) . PHP_EOL;'
+            - name: "List all php extensions with versions"
+              run: "php -r 'foreach (get_loaded_extensions() as $extension) echo $extension . ' ' . phpversion($extension) . PHP_EOL;'"
 
-      - name: "Configure Container"
+            - name: "Configure Container"
+              env:
+                  GIT_USER_EMAIL: "${{ secrets.GIT_USER_EMAIL }}"
+                  GIT_USER_USERNAME: "${{ secrets.GIT_USER_USERNAME }}"
+              run: |
+                  EMAIL=${GIT_USER_EMAIL:-"github-actions[bot]@users.noreply.github.com"}
+                  NAME=${GIT_USER_USERNAME:-"github-actions-shell"}
+
+                  git config --global user.email "${EMAIL}"
+                  git config --global user.name "${NAME}"
+
+            - name: "Check Composer Version"
+              run: "composer -V"
+
+            - name: "Validate composer.json and composer.json"
+              run: "composer validate --strict"
+
+            - name: "Get Composer Cache Directory"
+              id: "composer-cache"
+              run: "echo '::set-output name=dir::$(composer config cache-files-dir)'"
+
+            - name: "Cache dependencies"
+              uses: "actions/cache@v2"
+              with:
+                  path: "${{ steps.composer-cache.outputs.dir }}"
+                  key: "${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-${{ hashFiles('composer.json') }}"
+                  restore-keys: "${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-"
+
+            - name: "Install locked dependencies"
+              if: "matrix.dependencies == 'locked'"
+              run: "composer install --no-progress --no-interaction --ansi"
+
+            - name: "Install highest dependencies"
+              if: "matrix.dependencies == 'highest'"
+              run: "composer update --no-progress --no-interaction --ansi"
+
+            - name: "Install lowest dependencies"
+              if: "matrix.dependencies == 'lowest'"
+              run: "composer update --no-progress --no-interaction --ansi --prefer-lowest --prefer-stable"
+
+            - name: "Setup Problem Matchers for PHPUnit"
+              run: "echo '::add-matcher::${{ runner.tool_cache }}/phpunit.json'"
+
+            - name: "Run Test's Coverage"
+              if: "matrix.dependencies == 'locked'"
+              run: "./vendor/bin/phpunit --verbose --configuration=./phpunit.xml --coverage-clover=./.build/phpunit/coverage/clover.xml"
+              env:
+                  XDEBUG_MODE: "coverage"
+
+            - name: "Run Test's Suite"
+              if: "matrix.dependencies == 'lowest' || matrix.dependencies == 'highest'"
+              run: "./vendor/bin/phpunit --verbose --configuration=./phpunit.xml"
+
+            - name: "Upload linux php coverage result"
+              if: "matrix.dependencies == 'locked'"
+              uses: "actions/upload-artifact@v2"
+              with:
+                  name: "linux_clover"
+                  path: "./.build/phpunit/coverage/clover.xml"
+
+    WindowsIntegration:
+        name: "PHP ${{ matrix.php-versions }} Test on windows-latest OS with ${{ matrix.dependencies }} dependencies"
+
+        runs-on: "windows-latest"
+
+        strategy:
+            matrix:
+                php-versions: ["8.0"]
+                dependencies: ["highest", "lowest", "locked"]
+
         env:
-          GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
-          GIT_USER_USERNAME: ${{ secrets.GIT_USER_USERNAME }}
-        run: |
-          EMAIL=${GIT_USER_EMAIL:-"github-actions[bot]@users.noreply.github.com"}
-          NAME=${GIT_USER_USERNAME:-"github-actions-shell"}
+            key: "continuous-integration-windows-v1" # change key (version) to clear cache
+            extensions: "mbstring"
+            ini-values: "date.timezone=Europe/Berlin, assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=0, opcache.optimization_level=-1, opcache.jit=1255, opcache.jit_buffer_size=32M, serialize_precision=14"
+            tools: "composer"
 
-          git config --global user.email "${EMAIL}"
-          git config --global user.name "${NAME}"
+        steps:
+            - name: "Git checkout"
+              uses: "actions/checkout@v2"
+              with:
+                  fetch-depth: 2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-      - name: "Check Composer Version"
-        run: composer -V
+            - name: "Setup cache environment"
+              id: "cache-env"
+              uses: "shivammathur/cache-extensions@v1"
+              with:
+                  php-version: "${{ matrix.php-versions }}"
+                  extensions: "${{ env.extensions }}"
+                  key: "${{ env.key }}"
 
-      - name: "Validate composer.json and composer.json"
-        run: composer validate --strict
+            - name: "Cache extensions"
+              uses: "actions/cache@v2"
+              with:
+                  path: "${{ steps.cache-env.outputs.dir }}"
+                  key: "${{ steps.cache-env.outputs.key }}"
+                  restore-keys: "${{ steps.cache-env.outputs.key }}"
 
-      - name: "Get Composer Cache Directory"
-        id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+            - name: "Setup PHP"
+              uses: "shivammathur/setup-php@v2"
+              with:
+                  php-version: "${{ matrix.php-versions }}"
+                  extensions: "${{ env.extensions }}"
+                  ini-values: "${{ env.ini-values }}"
+                  tools: "${{ env.tools }}"
+                  coverage: "pcov"
 
-      - name: "Cache dependencies"
-        uses: actions/cache@v2
-        with:
-          path: "${{ steps.composer-cache.outputs.dir }}"
-          key: "${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-${{ hashFiles('composer.json') }}"
-          restore-keys: "${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-"
+            - name: "Setup Problem Matchers for PHP"
+              run: "echo '::add-matcher::${{ runner.tool_cache }}/php.json'"
 
-      - name: "Install locked dependencies"
-        if: matrix.dependencies == 'locked'
-        run: composer install --no-progress --no-interaction --ansi
+            - name: "Check PHP Version"
+              run: "php -v"
 
-      - name: "Install highest dependencies"
-        if: matrix.dependencies == 'highest'
-        run: composer update --no-progress --no-interaction --ansi
+            # - name: "List all php extensions with versions"
+            #  run: php -r 'foreach (get_loaded_extensions() as $extension) echo $extension . " " . phpversion($extension) . PHP_EOL;'
 
-      - name: "Install lowest dependencies"
-        if: matrix.dependencies == 'lowest'
-        run: composer update --no-progress --no-interaction --ansi --prefer-lowest --prefer-stable
+            - name: "Configure container"
+              env:
+                  GIT_USER_EMAIL: "${{ secrets.GIT_USER_EMAIL }}"
+                  GIT_USER_USERNAME: "${{ secrets.GIT_USER_USERNAME }}"
+              run: |
+                  if (${env:GIT_USER_EMAIL}) {
+                      git config --global user.email "${env:GIT_USER_EMAIL}"
+                  } else {
+                      git config --global user.email "github-actions[bot]@users.noreply.github.com"
+                  }
 
-      - name: "Setup Problem Matchers for PHPUnit"
-        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+                  if (${env:GIT_USER_USERNAME}) {
+                      git config --global user.name "${env:GIT_USER_USERNAME}"
+                  } else {
+                      git config --global user.name "github-actions-shell"
+                  }
 
-      - name: "Run Test's Coverage"
-        if: matrix.dependencies == 'locked'
-        run: ./vendor/bin/phpunit --verbose --configuration=./phpunit.xml --coverage-clover=./.build/phpunit/coverage/clover.xml
-        env:
-          XDEBUG_MODE: "coverage"
+            - name: "Check Composer Version"
+              run: "composer -V"
 
-      - name: "Run Test's Suite"
-        if: matrix.dependencies == 'lowest' || matrix.dependencies == 'highest'
-        run: ./vendor/bin/phpunit --verbose --configuration=./phpunit.xml
+            - name: "Validate composer.json and composer.json"
+              run: "composer validate --strict"
 
-      - name: "Upload linux php coverage result"
-        if: matrix.dependencies == 'locked'
-        uses: actions/upload-artifact@v2
-        with:
-          name: "linux_clover"
-          path: "./.build/phpunit/coverage/clover.xml"
+            - name: "Get Composer Cache Directory"
+              id: "composer-cache"
+              run: "echo '::set-output name=dir::$(composer config cache-files-dir)'"
 
-  WindowsIntegration:
-    name: "PHP ${{ matrix.php-versions }} Test on windows-latest OS with ${{ matrix.dependencies }} dependencies"
+            - name: "Cache dependencies"
+              uses: "actions/cache@v2"
+              with:
+                  path: "${{ steps.composer-cache.outputs.dir }}"
+                  key: "${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-${{ hashFiles('composer.json') }}"
+                  restore-keys: "${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-"
 
-    runs-on: windows-latest
+            - name: "Install locked dependencies"
+              if: "matrix.dependencies == 'locked'"
+              run: "Invoke-Expression -Command 'composer install --no-progress --no-interaction --ansi'"
 
-    strategy:
-      matrix:
-        php-versions: [ "8.0" ]
-        dependencies: [ "highest", "lowest", "locked" ]
+            - name: "Install highest dependencies"
+              if: "matrix.dependencies == 'highest'"
+              shell: "pwsh"
+              run: "Invoke-Expression -Command 'composer update --no-progress --no-interaction --ansi'"
 
-    env:
-      key: "continuous-integration-windows-v1" # change key (version) to clear cache
-      extensions: "mbstring"
-      ini-values: "date.timezone=Europe/Berlin, assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=0, opcache.optimization_level=-1, opcache.jit=1255, opcache.jit_buffer_size=32M, serialize_precision=14"
-      tools: "composer"
+            - name: "Install lowest dependencies"
+              if: "matrix.dependencies == 'lowest'"
+              shell: "pwsh"
+              run: "Invoke-Expression -Command 'composer update --no-progress --no-interaction --ansi --prefer-lowest --prefer-stable'"
 
-    steps:
-      - name: "Git checkout"
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
-        env:
-          GIT_COMMITTER_NAME: "GitHub Actions Shell"
-          GIT_AUTHOR_NAME: "GitHub Actions Shell"
-          EMAIL: "github-actions[bot]@users.noreply.github.com"
+            - name: "Setup Problem Matchers for PHPUnit"
+              run: "echo '::add-matcher::${{ runner.tool_cache }}/phpunit.json'"
 
-      - name: "Setup cache environment"
-        id: cache-env
-        uses: shivammathur/cache-extensions@v1
-        with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: ${{ env.extensions }}
-          key: ${{ env.key }}
+            - name: "Run Test's Coverage"
+              if: "matrix.dependencies == 'locked'"
+              run: Invoke-Expression -Command '.\vendor\bin\phpunit --verbose --configuration=.\phpunit.xml --coverage-clover=.\.build\phpunit\coverage\clover.xml' # yamllint disable-line rule:quoted-strings
+              env:
+                  XDEBUG_MODE: "coverage"
 
-      - name: "Cache extensions"
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.cache-env.outputs.dir }}
-          key: ${{ steps.cache-env.outputs.key }}
-          restore-keys: ${{ steps.cache-env.outputs.key }}
+            - name: "Run Test's Suite"
+              if: "matrix.dependencies == 'lowest' || matrix.dependencies == 'highest'"
+              run: Invoke-Expression -Command '.\vendor\bin\phpunit --verbose --configuration=.\phpunit.xml' # yamllint disable-line rule:quoted-strings
 
-      - name: "Setup PHP"
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: ${{ env.extensions }}
-          ini-values: ${{ env.ini-values }}
-          tools: ${{ env.tools }}
-          coverage: "pcov"
+            - name: "Upload windows php coverage result"
+              if: "matrix.dependencies == 'locked'"
+              uses: "actions/upload-artifact@v2"
+              with:
+                  name: "windows_clover"
+                  path: "./.build/phpunit/coverage/clover.xml"
 
-      - name: "Setup Problem Matchers for PHP"
-        run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+    Coverage:
+        needs: ["LinuxIntegration", "WindowsIntegration"]
 
-      - name: "Check PHP Version"
-        run: php -v
+        runs-on: "ubuntu-latest"
 
-      #- name: "List all php extensions with versions"
-      #  run: php -r 'foreach (get_loaded_extensions() as $extension) echo $extension . " " . phpversion($extension) . PHP_EOL;'
+        steps:
+            - name: "Git checkout"
+              uses: "actions/checkout@v2"
+              with:
+                  fetch-depth: 2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-      - name: "Configure container"
-        env:
-          GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
-          GIT_USER_USERNAME: ${{ secrets.GIT_USER_USERNAME }}
-        run: |
-          if (${env:GIT_USER_EMAIL}) {
-            git config --global user.email "${env:GIT_USER_EMAIL}"
-          } else {
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          }
+            - name: "Download php coverage result"
+              id: "download"
+              uses: "actions/download-artifact@v2"
+              with:
+                  path: "./clover"
 
-          if (${env:GIT_USER_USERNAME}) {
-            git config --global user.name "${env:GIT_USER_USERNAME}"
-          } else {
-            git config --global user.name "github-actions-shell"
-          }
-
-      - name: "Setup Problem Matchers for PHPUnit"
-        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
-
-      - name: "Check Composer Version"
-        run: composer -V
-
-      - name: "Validate composer.json and composer.json"
-        run: composer validate --strict
-
-      - name: "Get Composer Cache Directory"
-        id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-
-      - name: "Cache dependencies"
-        uses: actions/cache@v2
-        with:
-          path: "${{ steps.composer-cache.outputs.dir }}"
-          key: "${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-${{ hashFiles('composer.json') }}"
-          restore-keys: "${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-"
-
-      - name: "Install locked dependencies"
-        if: matrix.dependencies == 'locked'
-        run: Invoke-Expression -Command "composer install --no-progress --no-interaction --ansi"
-
-      - name: "Install highest dependencies"
-        if: matrix.dependencies == 'highest'
-        shell: pwsh
-        run: Invoke-Expression -Command "composer update --no-progress --no-interaction --ansi"
-
-      - name: "Install lowest dependencies"
-        if: matrix.dependencies == 'lowest'
-        shell: pwsh
-        run: Invoke-Expression -Command "composer update --no-progress --no-interaction --ansi --prefer-lowest --prefer-stable"
-
-      - name: "Run Test's Coverage"
-        if: matrix.dependencies == 'locked'
-        run: Invoke-Expression -Command ".\vendor\bin\phpunit --verbose --configuration=.\phpunit.xml --coverage-clover=.\.build\phpunit\coverage\clover.xml"
-        env:
-          XDEBUG_MODE: "coverage"
-
-      - name: "Run Test's Suite"
-        if: matrix.dependencies == 'lowest' || matrix.dependencies == 'highest'
-        run: Invoke-Expression -Command ".\vendor\bin\phpunit --verbose --configuration=.\phpunit.xml"
-
-      - name: "Upload windows php coverage result"
-        if: matrix.dependencies == 'locked'
-        uses: actions/upload-artifact@v2
-        with:
-          name: "windows_clover"
-          path: "./.build/phpunit/coverage/clover.xml"
-
-
-  Coverage:
-    needs: ["LinuxIntegration", "WindowsIntegration"]
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: "Git checkout"
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
-        env:
-          GIT_COMMITTER_NAME: "GitHub Actions Shell"
-          GIT_AUTHOR_NAME: "GitHub Actions Shell"
-          EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-      - name: "Download php coverage result"
-        id: download
-        uses: actions/download-artifact@v2
-        with:
-          path: "./clover"
-
-      - name: "Send code coverage report to Codecov.io"
-        uses: codecov/codecov-action@v1
-        with:
-          directory: ${{steps.download.outputs.download-path}}
-          fail_ci_if_error: true
+            - name: "Send code coverage report to Codecov.io"
+              uses: "codecov/codecov-action@v1"
+              with:
+                  directory: "${{steps.download.outputs.download-path}}"
+                  fail_ci_if_error: true

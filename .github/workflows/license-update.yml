@@ -2,118 +2,117 @@
 
 name: "License update"
 
-on:
-  schedule:
-    - cron: "1 0 1 1 *"
+on: # yamllint disable-line rule:truthy
+    schedule:
+        - cron: "1 0 1 1 *"
 
 jobs:
-  narrowspark-license-update:
-    name: "License update"
+    narrowspark-license-update:
+        name: "License update"
 
-    runs-on: ubuntu-latest
+        runs-on: "ubuntu-latest"
 
-    strategy:
-      matrix:
-        php-versions: [ "8.0" ]
-        dependencies: [ "locked" ]
-        compiler: [ "default" ]
+        strategy:
+            matrix:
+                php-versions: ["8.0"]
+                dependencies: ["locked"]
 
-    env:
-      key: "license-update-linux-v1" # change key (version) to clear cache
-      extensions: "mbstring"
-      ini-values: "date.timezone=Europe/Berlin, assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=0, opcache.optimization_level=-1, opcache.jit=1255, opcache.jit_buffer_size=32M, serialize_precision=14"
-      tools: "composer, cs2pr"
-
-    steps:
-      - name: "Git checkout"
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
         env:
-          GIT_COMMITTER_NAME: "GitHub Actions Shell"
-          GIT_AUTHOR_NAME: "GitHub Actions Shell"
-          EMAIL: "github-actions[bot]@users.noreply.github.com"
+            key: "license-update-linux-v1" # change key (version) to clear cache
+            extensions: "mbstring"
+            ini-values: "date.timezone=Europe/Berlin, assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=0, opcache.optimization_level=-1, opcache.jit=1255, opcache.jit_buffer_size=32M, serialize_precision=14"
+            tools: "composer, cs2pr"
 
-      - name: "Setup cache environment"
-        id: cache-env
-        uses: shivammathur/cache-extensions@v1
-        with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: ${{ env.extensions }}
-          key: ${{ env.key }}
+        steps:
+            - name: "Git checkout"
+              uses: "actions/checkout@v2"
+              with:
+                  fetch-depth: 2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-      - name: "Cache extensions"
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.cache-env.outputs.dir }}
-          key: ${{ steps.cache-env.outputs.key }}
-          restore-keys: ${{ steps.cache-env.outputs.key }}
+            - name: "Setup cache environment"
+              id: "cache-env"
+              uses: "shivammathur/cache-extensions@v1"
+              with:
+                  php-version: "${{ matrix.php-versions }}"
+                  extensions: "${{ env.extensions }}"
+                  key: "${{ env.key }}"
 
-      - name: "Setup PHP"
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: ${{ env.extensions }}
-          ini-values: ${{ env.ini-values }}
-          tools: ${{ env.tools }}
-          coverage: "none"
+            - name: "Cache extensions"
+              uses: "actions/cache@v2"
+              with:
+                  path: "${{ steps.cache-env.outputs.dir }}"
+                  key: "${{ steps.cache-env.outputs.key }}"
+                  restore-keys: "${{ steps.cache-env.outputs.key }}"
 
-      - name: "Setup Problem Matchers for PHP"
-        run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+            - name: "Setup PHP"
+              uses: "shivammathur/setup-php@v2"
+              with:
+                  php-version: "${{ matrix.php-versions }}"
+                  extensions: "${{ env.extensions }}"
+                  ini-values: "${{ env.ini-values }}"
+                  tools: "${{ env.tools }}"
+                  coverage: "pcov"
 
-      - name: "Check PHP Version"
-        run: php -v
+            - name: "Setup Problem Matchers for PHP"
+              run: "echo '::add-matcher::${{ runner.tool_cache }}/php.json'"
 
-      - name: "List all php extensions with versions"
-        run: php -r 'foreach (get_loaded_extensions() as $extension) echo $extension . " " . phpversion($extension) . PHP_EOL;'
+            - name: "Check PHP Version"
+              run: "php -v"
 
-      - name: "Configure Container"
-        env:
-          GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
-          GIT_USER_USERNAME: ${{ secrets.GIT_USER_USERNAME }}
-        run: |
-          EMAIL=${GIT_USER_EMAIL:-"github-actions[bot]@users.noreply.github.com"}
-          NAME=${GIT_USER_USERNAME:-"github-actions-shell"}
+            - name: "List all php extensions with versions"
+              run: "php -r 'foreach (get_loaded_extensions() as $extension) echo $extension . ' ' . phpversion($extension) . PHP_EOL;'"
 
-          git config --global user.email "${EMAIL}"
-          git config --global user.name "${NAME}"
+            - name: "Configure Container"
+              env:
+                  GIT_USER_EMAIL: "${{ secrets.GIT_USER_EMAIL }}"
+                  GIT_USER_USERNAME: "${{ secrets.GIT_USER_USERNAME }}"
+              run: |
+                  EMAIL=${GIT_USER_EMAIL:-"github-actions[bot]@users.noreply.github.com"}
+                  NAME=${GIT_USER_USERNAME:-"github-actions-shell"}
 
-      - name: "Check Composer Version"
-        run: composer -V
+                  git config --global user.email "${EMAIL}"
+                  git config --global user.name "${NAME}"
 
-      - name: "Validate composer.json and composer.json"
-        run: composer validate --strict
+            - name: "Check Composer Version"
+              run: "composer -V"
 
-      - name: "Get Composer Cache Directory"
-        id: composer-cache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+            - name: "Validate composer.json and composer.json"
+              run: "composer validate --strict"
 
-      - name: "Cache dependencies"
-        uses: actions/cache@v2
-        with:
-          path: "${{ steps.composer-cache.outputs.dir }}"
-          key: "${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-${{ hashFiles('composer.json') }}"
-          restore-keys: "${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-"
+            - name: "Get Composer Cache Directory"
+              id: "composer-cache"
+              run: "echo '::set-output name=dir::$(composer config cache-files-dir)'"
 
-      - name: "Install locked dependencies"
-        if: matrix.dependencies == 'locked'
-        run: composer install --no-progress --no-interaction --ansi
+            - name: "Cache dependencies"
+              uses: "actions/cache@v2"
+              with:
+                  path: "${{ steps.composer-cache.outputs.dir }}"
+                  key: "${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-${{ hashFiles('composer.json') }}"
+                  restore-keys: "${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-"
 
-      - name: "Install highest dependencies"
-        if: matrix.dependencies == 'highest'
-        run: composer update --no-progress --no-interaction --ansi
+            - name: "Install locked dependencies"
+              if: "matrix.dependencies == 'locked'"
+              run: "composer install --no-progress --no-interaction --ansi"
 
-      - name: "Install lowest dependencies"
-        if: matrix.dependencies == 'lowest'
-        run: composer update --no-progress --no-interaction --ansi --prefer-lowest --prefer-stable
+            - name: "Install highest dependencies"
+              if: "matrix.dependencies == 'highest'"
+              run: "composer update --no-progress --no-interaction --ansi"
 
-      - name: "Run friendsofphp/php-cs-fixer"
-        run: composer cs -- --diff --diff-format=udiff --verbose
+            - name: "Install lowest dependencies"
+              if: "matrix.dependencies == 'lowest'"
+              run: "composer update --no-progress --no-interaction --ansi --prefer-lowest --prefer-stable"
 
-      - name: "Commit modified files"
-        uses: "stefanzweifel/git-auto-commit-action@v4.9.1"
-        with:
-          commit_author: "Daniel Bannert <d.banner@anolilab.de>"
-          commit_message: "Enhancement: Update license year"
-          commit_user_email: "d.banner@anolilab.de"
-          commit_user_name: "prisis"
+            - name: "Run friendsofphp/php-cs-fixer"
+              run: "composer cs -- --diff --diff-format=udiff --verbose"
+
+            - name: "Commit modified files"
+              uses: "stefanzweifel/git-auto-commit-action@v4.9.1"
+              with:
+                  commit_author: "Daniel Bannert <d.banner@anolilab.de>"
+                  commit_message: "Enhancement: Update license year"
+                  commit_user_email: "d.banner@anolilab.de"
+                  commit_user_name: "prisis"

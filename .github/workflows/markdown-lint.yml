@@ -2,59 +2,59 @@
 
 name: "Markdown Lint"
 
-on:
-  push:
-    paths:
-      - "**.md"
-  pull_request:
-    paths:
-      - "**.md"
+on: # yamllint disable-line rule:truthy
+    push:
+        paths:
+            - "**.md"
+    pull_request:
+        paths:
+            - "**.md"
 
 jobs:
-  text-lint:
-    name: "Markdown lint"
+    text-lint:
+        name: "Markdown lint"
 
-    runs-on: ubuntu-latest
+        runs-on: "ubuntu-latest"
 
-    steps:
-      - name: "Git checkout"
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
-        env:
-          GIT_COMMITTER_NAME: "GitHub Actions Shell"
-          GIT_AUTHOR_NAME: "GitHub Actions Shell"
-          EMAIL: "github-actions[bot]@users.noreply.github.com"
+        steps:
+            - name: "Git checkout"
+              uses: "actions/checkout@v2"
+              with:
+                  fetch-depth: 2
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
 
-      - name: "Use Node.js 14.x"
-        uses: actions/setup-node@v2
-        with:
-          node-version: 14.16.0
+            - name: "Use Node.js 14.x"
+              uses: "actions/setup-node@v2"
+              with:
+                  node-version: "14.16.0"
 
-      - name: "Configure Container"
-        env:
-          GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
-          GIT_USER_USERNAME: ${{ secrets.GIT_USER_USERNAME }}
-        run: |
-          EMAIL=${GIT_USER_EMAIL:-"github-actions[bot]@users.noreply.github.com"}
-          NAME=${GIT_USER_USERNAME:-"github-actions-shell"}
+            - name: "Configure Container"
+              env:
+                  GIT_USER_EMAIL: "${{ secrets.GIT_USER_EMAIL }}"
+                  GIT_USER_USERNAME: "${{ secrets.GIT_USER_USERNAME }}"
+                  run: |
+                      EMAIL=${GIT_USER_EMAIL:-"github-actions[bot]@users.noreply.github.com"}
+                      NAME=${GIT_USER_USERNAME:-"github-actions-shell"}
 
-          git config --global user.email "${EMAIL}"
-          git config --global user.name "${NAME}"
+                      git config --global user.email "${EMAIL}"
+                      git config --global user.name "${NAME}"
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+            - name: "Get yarn cache directory path"
+              id: "yarn-cache-dir-path"
+              run: "echo '::set-output name=dir::$(yarn config get cacheFolder)'"
 
-      - uses: actions/cache@v2
-        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+            - uses: "actions/cache@v2"
+              id: "yarn-cache" # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+              with:
+                  path: "${{ steps.yarn-cache-dir-path.outputs.dir }}"
+                  key: "${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}"
+                  restore-keys: "${{ runner.os }}-yarn-"
 
-      - name: install
-        run: yarn install
+            - name: "install"
+              run: "yarn install"
 
-      - run: npm run lint
+            - name: "lint"
+              run: "npm run lint"

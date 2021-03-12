@@ -1,22 +1,24 @@
-name: 'Github Template Sync'
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
 
-on:
-  schedule:
-    - cron: '0 * * * *'
+name: "Github Template Sync"
+
+on: # yamllint disable-line rule:truthy
+    schedule:
+        - cron: "0 * * * *"
 
 jobs:
-  sync:
+    sync:
 
-    runs-on: ubuntu-latest
+        runs-on: "ubuntu-latest"
 
-    if: github.repository != 'narrowspark/php-library-template'
+        if: "github.repository != 'narrowspark/php-library-template'"
 
-    steps:
-      - uses: actions/checkout@v2
-      - uses: narrowspark/template-sync-action@v1.0.0-alpha.7
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          git_author_name: github-actions-shell
-          git_author_email: github-actions[bot]@users.noreply.github.com
-          template_repository: narrowspark/php-library-template
-          ref: refs/heads/main
+        steps:
+            - uses: "actions/checkout@v2"
+            - uses: "narrowspark/template-sync-action@v1.0.0-alpha.9"
+              with:
+                  github_token: "${{ secrets.GITHUB_TOKEN }}"
+                  git_author_name: "github-actions-shell"
+                  git_author_email: "github-actions[bot]@users.noreply.github.com"
+                  template_repository: "narrowspark/php-library-template"
+                  ref: "refs/heads/main"
