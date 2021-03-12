@@ -2,12 +2,31 @@
 # Ignoring those within your global gitignore will make it so
 # they will never get commited within any project you have.
 
-.php_cs.cache
-coverage.xml
-.phpunit.result.cache
-
-/build/logs
-/vendor
-
 composer.phar
-composer.lock
+/composer.lock
+
+rector-temp-phpstan.neon
+
+.php_cs.cache
+.phpunit.result.cache
+.phpunit.xdebug-filter.php
+
+infection.log
+
+/.build/composer.lock
+/.build/infection/
+!/.build/infection/.gitkeep
+/.build/php-cs-fixer/
+!/.build/php-cs-fixer/.gitkeep
+/.build/phpstan/
+!/.build/phpstan/.gitkeep
+/.build/phpunit/
+!/.build/phpunit/.gitkeep
+/.build/psalm/
+!/.build/psalm/.gitkeep
+
+/.build/vendor
+/.build/logs/
+
+/vendor/
+/node_modules/

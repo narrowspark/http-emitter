@@ -1,0 +1,55 @@
+# This is a sample .typo-ci.yml file, it's used to configure how Typo CI will behave.
+# Add it to the root of your project and push it to github.
+---
+
+# What language dictionaries should it use? Currently Typo CI supports:
+# de
+# en
+# en_GB
+# es
+# fr
+# it
+# pt
+# pt_BR
+dictionaries:
+  - en
+  - en_GB
+
+# Any files/folders we should ignore?
+excluded_files:
+  - "vendor/**/*"
+  - ".build/**/*"
+  - ".dependabot/**/*"
+  - ".docker/**/*"
+  - ".github/workflows/**/*"
+  - ".github/settings.yml"
+  - ".changelog"
+  - ".editorconfig"
+  - ".gitattributes"
+  - ".gitignore"
+  - ".nvmrc"
+  - ".php_cs"
+  - ".textlintrc"
+  - "docker-compose.yml"
+  - "infection.json"
+  - "package.json"
+  - "package-lock.json"
+  - "phpstan.neon"
+  - "phpunit.xml"
+  - "psalm.xml"
+  - "psalm-baseline.xml"
+  - "src/**/*.php"
+  - "tests/**/*.php"
+  - "release.config.js"
+
+# Any typos we should ignore?
+excluded_words:
+  - typoci
+  - anolilab
+  - bannert
+  - prisis
+  - narrowspark
+  - composer
+
+# Would you like filenames to also be spellchecked?
+spellcheck_filenames: true

@@ -1,0 +1,22 @@
+name: 'Github Template Sync'
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+
+jobs:
+  sync:
+
+    runs-on: ubuntu-latest
+
+    if: github.repository != 'narrowspark/php-library-template'
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: narrowspark/template-sync-action@v1.0.0-alpha.7
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          git_author_name: github-actions-shell
+          git_author_email: github-actions[bot]@users.noreply.github.com
+          template_repository: narrowspark/php-library-template
+          ref: refs/heads/main

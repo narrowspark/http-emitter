@@ -1,0 +1,62 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Post operation are forbidden, as they make 2 values at the same line\\. Use pre instead$#"
+			count: 1
+			path: src/Util.php
+
+		-
+			message: "#^Do not use static property$#"
+			count: 5
+			path: tests/AbstractEmitterTest.php
+
+		-
+			message: "#^Do not use chained method calls\\. Put each on separated lines\\.$#"
+			count: 5
+			path: tests/AbstractEmitterTest.php
+
+		-
+			message: "#^Do not use static property$#"
+			count: 4
+			path: tests/Helper/HeaderStack.php
+
+		-
+			message: "#^Do not use static property$#"
+			count: 3
+			path: tests/OverwritePhpFunctions.php
+
+		-
+			message: "#^Do not use static property$#"
+			count: 3
+			path: tests/SapiEmitterTest.php
+
+		-
+			message: "#^Do not use chained method calls\\. Put each on separated lines\\.$#"
+			count: 5
+			path: tests/SapiEmitterTest.php
+
+		-
+			message: "#^Do not use static property$#"
+			count: 4
+			path: tests/SapiStreamEmitterTest.php
+
+		-
+			message: "#^Do not use chained method calls\\. Put each on separated lines\\.$#"
+			count: 99
+			path: tests/SapiStreamEmitterTest.php
+
+		-
+			message: "#^Use explicit names over dynamic ones$#"
+			count: 1
+			path: tests/SapiStreamEmitterTest.php
+
+		-
+			message: "#^Do not use static property$#"
+			count: 3
+			path: tests/UtilTest.php
+
+		-
+			message: "#^Do not use chained method calls\\. Put each on separated lines\\.$#"
+			count: 13
+			path: tests/UtilTest.php
+

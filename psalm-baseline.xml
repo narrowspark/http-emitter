@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="4.6.2@bca09d74adc704c4eaee36a3c3e9d379e290fc3b">
+  <file src="src/Util.php">
+    <PossiblyUnusedMethod occurrences="1">
+      <code>injectContentLength</code>
+    </PossiblyUnusedMethod>
+    <UnusedConstructor occurrences="1">
+      <code>__construct</code>
+    </UnusedConstructor>
+  </file>
+  <file src="tests/Helper/StreamMock.php">
+    <UnusedParam occurrences="1">
+      <code>$whence</code>
+    </UnusedParam>
+  </file>
+</files>

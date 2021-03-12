@@ -3,18 +3,24 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark.
+ * Copyright (c) 2017-2021 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/http-emitter
  */
 
 namespace Narrowspark\HttpEmitter;
 
 use Narrowspark\HttpEmitter\Contract\RuntimeException;
 use Psr\Http\Message\ResponseInterface;
+use const PHP_SAPI;
+use function function_exists;
+use function in_array;
+use function Safe\fastcgi_finish_request;
+use function Safe\sprintf;
+use function Safe\vsprintf;
 
 abstract class AbstractSapiEmitter
 {
@@ -30,10 +36,6 @@ abstract class AbstractSapiEmitter
      *
      * Implementations MAY raise exceptions if they are unable to emit the
      * response; e.g., if headers have already been sent.
-     *
-     * @param \Psr\Http\Message\ResponseInterface $response
-     *
-     * @return void
      */
     abstract public function emit(ResponseInterface $response): void;
 
@@ -41,15 +43,13 @@ abstract class AbstractSapiEmitter
      * Assert either that no headers been sent or the output buffer contains no content.
      *
      * @throws \Narrowspark\HttpEmitter\Contract\RuntimeException
-     *
-     * @return void
      */
     protected function assertNoPreviousOutput(): void
     {
         $file = $line = null;
 
         if (headers_sent($file, $line)) {
-            throw new RuntimeException(\sprintf(
+            throw new RuntimeException(sprintf(
                 'Unable to emit response: Headers already sent in file %s on line %s. '
                 . 'This happens if echo, print, printf, print_r, var_dump, var_export or similar statement that writes to the output buffer are used.',
                 $file,
@@ -57,9 +57,15 @@ abstract class AbstractSapiEmitter
             ));
         }
 
-        if (\ob_get_level() > 0 && \ob_get_length() > 0) {
-            throw new RuntimeException('Output has been emitted previously; cannot emit response.');
+        if (ob_get_level() <= 0) {
+            return;
         }
+
+        if (ob_get_length() <= 0) {
+            return;
+        }
+
+        throw new RuntimeException('Output has been emitted previously; cannot emit response.');
     }
 
     /**
@@ -71,22 +77,18 @@ abstract class AbstractSapiEmitter
      * It's important to mention that, in order to prevent PHP from changing
      * the status code of the emitted response, this method should be called
      * after `emitBody()`
-     *
-     * @param \Psr\Http\Message\ResponseInterface $response
-     *
-     * @return void
      */
     protected function emitStatusLine(ResponseInterface $response): void
     {
         $statusCode = $response->getStatusCode();
 
         header(
-            \vsprintf(
+            vsprintf(
                 'HTTP/%s %d%s',
                 [
                     $response->getProtocolVersion(),
                     $statusCode,
-                    \rtrim(' ' . $response->getReasonPhrase()),
+                    rtrim(' ' . $response->getReasonPhrase()),
                 ]
             ),
             true,
@@ -101,10 +103,6 @@ abstract class AbstractSapiEmitter
      * is an array with multiple values, ensures that each is sent
      * in such a way as to create aggregate headers (instead of replace
      * the previous).
-     *
-     * @param \Psr\Http\Message\ResponseInterface $response
-     *
-     * @return void
      */
     protected function emitHeaders(ResponseInterface $response): void
     {
@@ -116,7 +114,7 @@ abstract class AbstractSapiEmitter
 
             foreach ($values as $value) {
                 header(
-                    \sprintf(
+                    sprintf(
                         '%s: %s',
                         $name,
                         $value
@@ -132,33 +130,27 @@ abstract class AbstractSapiEmitter
 
     /**
      * Converts header names to wordcase.
-     *
-     * @param string $header
-     *
-     * @return string
      */
     protected function toWordCase(string $header): string
     {
-        $filtered = \str_replace('-', ' ', $header);
-        $filtered = \ucwords($filtered);
+        $filtered = str_replace('-', ' ', $header);
+        $filtered = ucwords($filtered);
 
-        return \str_replace(' ', '-', $filtered);
+        return str_replace(' ', '-', $filtered);
     }
 
     /**
      * Flushes output buffers and closes the connection to the client,
      * which ensures that no further output can be sent.
-     *
-     * @return void
      */
     protected function closeConnection(): void
     {
-        if (! \in_array(\PHP_SAPI, ['cli', 'phpdbg'], true)) {
+        if (! in_array(PHP_SAPI, ['cli', 'phpdbg'], true)) {
             Util::closeOutputBuffers(0, true);
         }
 
-        if (\function_exists('fastcgi_finish_request')) {
-            \fastcgi_finish_request();
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
         }
     }
 }

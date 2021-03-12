@@ -1,0 +1,62 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": ["config:base"],
+    "labels": ["dependency", "Changed"],
+    "semanticCommits": true,
+    "composer": {
+        "enabled": true
+    },
+    "vulnerabilityAlerts": {
+        "enabled": true,
+        "labels": [
+            "arg0"
+        ]
+    },
+    "major": {
+        "semanticCommitType": "deps",
+        "semanticCommitScope": "arg0"
+    },
+    "packageRules": [
+        {
+            "groupName": "renovate-meta",
+            "automerge": true,
+            "updateTypes": ["lockFileMaintenance", "pin"],
+            "labels": ["dependency", "Changed"],
+            "semanticCommitType": "chore",
+            "semanticCommitScope": "deps",
+            "datasources": ["npm"]
+        },
+        {
+            "groupName": "dependencies (major)",
+            "automerge": false,
+            "depTypeList": ["require"],
+            "updateTypes": ["major"],
+            "semanticCommitType": "deps"
+        },
+        {
+            "groupName": "dependencies (non-major)",
+            "automerge": true,
+            "depTypeList": ["dependencies", "require"],
+            "updateTypes": ["patch", "minor"],
+            "semanticCommitType": "deps"
+        },
+        {
+            "groupName": "devDependencies (major)",
+            "automerge": true,
+            "depTypeList": ["devDependencies", "require-dev"],
+            "updateTypes": ["major"],
+            "labels": ["dependency", "Changed"],
+            "semanticCommitType": "chore",
+            "semanticCommitScope": "deps"
+        },
+        {
+            "groupName": "devDependencies (non-major)",
+            "automerge": true,
+            "depTypeList": ["devDependencies", "require-dev"],
+            "updateTypes": ["patch", "minor"],
+            "labels": ["dependency", "Changed"],
+            "semanticCommitType": "chore",
+            "semanticCommitScope": "deps"
+        }
+    ]
+}

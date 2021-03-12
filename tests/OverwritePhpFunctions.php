@@ -3,54 +3,52 @@
 declare(strict_types=1);
 
 /**
- * This file is part of Narrowspark.
+ * Copyright (c) 2017-2021 Daniel Bannert
  *
- * (c) Daniel Bannert <d.bannert@anolilab.de>
+ * For the full copyright and license information, please view
+ * the LICENSE.md file that was distributed with this source code.
  *
- * This source file is subject to the MIT license that is bundled
- * with this source code in the file LICENSE.
+ * @see https://github.com/narrowspark/http-emitter
  */
+
+/** @noRector \Rector\PSR4\Rector\FileWithoutNamespace\NormalizeNamespaceByPSR4ComposerAutoloadRector */
 
 namespace Narrowspark\HttpEmitter;
 
 use Narrowspark\HttpEmitter\Tests\Helper\HeaderStack;
+use function function_exists;
 
-/**
- * Have headers been sent?
- *
- * @param null|string $file
- * @param null|int    $line
- *
- * @return bool false
- */
-function headers_sent(&$file = null, &$line = null): bool
-{
-    $sent = HeaderStack::$headersSent;
+if (! function_exists('Narrowspark\\HttpEmitter\\headers_sent')) {
+    /**
+     * Have headers been sent?
+     *
+     * @return bool false
+     */
+    function headers_sent(?string &$file = null, ?int &$line = null): bool
+    {
+        $sent = HeaderStack::$headersSent;
 
-    if ($sent) {
-        $file = HeaderStack::$headersFile;
-        $line = HeaderStack::$headersLine;
+        if ($sent) {
+            $file = HeaderStack::$headersFile;
+            $line = HeaderStack::$headersLine;
+        }
+
+        return $sent;
     }
-
-    return $sent;
 }
 
-/**
- * Emit a header, without creating actual output artifacts.
- *
- * @param string   $string
- * @param bool     $replace
- * @param null|int $statusCode
- *
- * @return void
- */
-function header($string, $replace = true, $statusCode = null): void
-{
-    HeaderStack::push(
-        [
-            'header' => $string,
-            'replace' => $replace,
-            'status_code' => $statusCode,
-        ]
-    );
+if (! function_exists('Narrowspark\\HttpEmitter\\header')) {
+    /**
+     * Emit a header, without creating actual output artifacts.
+     */
+    function header(string $string, bool $replace = true, ?int $statusCode = null): void
+    {
+        HeaderStack::push(
+            [
+                'header' => $string,
+                'replace' => $replace,
+                'status_code' => $statusCode,
+            ]
+        );
+    }
 }
