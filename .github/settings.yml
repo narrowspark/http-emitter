@@ -113,7 +113,7 @@ repository:
   allow_rebase_merge: false
   allow_squash_merge: false
   archived: false
-  default_branch: master
+  default_branch: main
   delete_branch_on_merge: true
   description: ":satellite: Emitting psr-7 responses."
   has_downloads: true
