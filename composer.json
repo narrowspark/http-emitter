@@ -28,12 +28,12 @@
     },
     "require-dev": {
         "ext-json": "*",
-        "laminas/laminas-diactoros": "^2.5.0",
-        "mockery/mockery": "^1.4.2",
-        "narrowspark/coding-standard": "^5.2.2",
-        "phpunit/phpunit": "^9.5.2",
-        "psalm/plugin-mockery": "^0.7.0",
-        "thecodingmachine/phpstan-safe-rule": "^1.0.1"
+        "laminas/laminas-diactoros": "2.5.0",
+        "mockery/mockery": "1.4.3",
+        "narrowspark/coding-standard": "5.2.2",
+        "phpunit/phpunit": "9.5.2",
+        "psalm/plugin-mockery": "0.7.0",
+        "thecodingmachine/phpstan-safe-rule": "1.0.1"
     },
     "config": {
         "optimize-autoloader": true,
