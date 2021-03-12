@@ -70,7 +70,7 @@ jobs:
               run: "php -v"
 
             - name: "List all php extensions with versions"
-              run: "php -r 'foreach (get_loaded_extensions() as $extension) echo $extension . ' ' . phpversion($extension) . PHP_EOL;'"
+              run: "php -r 'foreach (get_loaded_extensions() as $extension) echo $extension . \" \" . phpversion($extension) . PHP_EOL;'"
 
             - name: "Configure Container"
               env:
