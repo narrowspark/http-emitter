@@ -16,7 +16,7 @@ jobs:
   Test:
     name: "PHP ${{ matrix.php-versions }} Test on ubuntu-latest OS with ${{ matrix.dependencies }} dependencies"
 
-    if: ${{ env.GITHUB_REPOSITORY }} != 'narrowspark/php-library-template'
+    if: github.repository != 'narrowspark/php-library-template'
 
     runs-on: ubuntu-latest
 
@@ -124,7 +124,7 @@ jobs:
   semantic-release:
     name: "Semantic Release"
 
-    if: ${{ env.GITHUB_REPOSITORY }} != 'narrowspark/php-library-template'
+    if: github.repository != 'narrowspark/php-library-template'
 
     runs-on: ubuntu-latest
 
