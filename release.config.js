@@ -51,13 +51,13 @@ module.exports = {
             }
         ],
         "@semantic-release/changelog",
-        "@semantic-release/github",
         [
-            "@semantic-release/git",
+            "@semantic-release/github",
             {
                 "assets": [
                     "composer.json",
                     "src/*",
+                    "README.md",
                     "UPGRADE.md",
                     "LICENSE.md",
                     "CHANGELOG.md"
