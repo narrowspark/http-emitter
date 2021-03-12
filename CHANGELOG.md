@@ -1,3 +1,14 @@
+## [2.0.0](https://github.com/narrowspark/http-emitter/compare/v1.0.0...v2.0.0) (2021-03-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* dropping support for php8
+
+### Features
+
+* upgraded package to support php v8 only ([#38](https://github.com/narrowspark/http-emitter/issues/38)) ([3a12f8a](https://github.com/narrowspark/http-emitter/commit/3a12f8a7713c2b1754a0af0d3a8057b6c3bd1d00))
+
 v1.0.0
 ======
 
@@ -56,4 +67,3 @@ Fixed
 -----
 
  - [17: avoid use of multi-byte string functions](https://github.com/narrowspark/http-emitter/pull/17) thanks to @mindplay-dk
-
