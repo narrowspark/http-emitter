@@ -19,21 +19,31 @@
         }
     ],
     "require": {
-        "php": "^7.2",
-        "psr/http-message": "^1.0"
+        "php": "^8.0",
+        "psr/http-message": "^1.0",
+        "thecodingmachine/safe": "^1.3.3"
     },
     "provide": {
         "psr/http-message-implementation": "^1.0"
     },
     "require-dev": {
-        "narrowspark/coding-standard": "^3.0.0",
-        "phpunit/phpunit": "^8.3.4",
-        "zendframework/zend-diactoros": "^1.8.0 || ^2.0.0"
+        "ext-json": "*",
+        "laminas/laminas-diactoros": "^2.5.0",
+        "mockery/mockery": "^1.4.2",
+        "narrowspark/coding-standard": "^5.2.2",
+        "phpunit/phpunit": "^9.5.2",
+        "psalm/plugin-mockery": "^0.7.0",
+        "thecodingmachine/phpstan-safe-rule": "^1.0.1"
     },
     "config": {
         "optimize-autoloader": true,
-        "sort-packages": true,
-        "preferred-install": "dist"
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
     },
     "autoload": {
         "psr-4": {
@@ -51,16 +61,25 @@
             "tests/OverwritePhpFunctions.php"
         ]
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "scripts": {
-        "coverage": "phpunit --coverage-html=\"build/logs\"",
-        "cs": "php-cs-fixer fix",
-        "phpstan": "phpstan analyse -c phpstan.neon src --memory-limit=-1",
+        "cs": "php-cs-fixer fix --config=\"./.php_cs\" --ansi",
+        "cs:check": "php-cs-fixer fix --config=\"./.php_cs\" --ansi --dry-run",
+        "infection": "XDEBUG_MODE=coverage infection --configuration=\"./infection.json\" -j$(nproc) --ansi",
+        "phpstan": "phpstan analyse -c ./phpstan.neon --ansi --memory-limit=-1",
+        "phpstan:baseline": "phpstan analyse -c ./phpstan.neon --ansi --generate-baseline --memory-limit=-1",
+        "psalm": "psalm --threads=$(nproc)",
+        "psalm:baseline": "psalm --threads=$(nproc) --set-baseline=psalm-baseline.xml",
+        "psalm:baseline:update": "psalm --threads=$(nproc) --update-baseline",
+        "psalm:fix": "psalm --alter --issues=all --threads=$(nproc)",
+        "rector": "rector process --ansi --dry-run",
+        "rector:fix": "rector process --ansi",
         "test": "phpunit",
-        "changelog":  "changelog-generator generate --config=\".changelog\" --file --prepend"
+        "test:coverage": "phpunit --coverage-html=./.build/phpunit/coverage"
     },
     "support": {
-        "issues": "https://github.com/narrowspark/http-emitter/issues",
-        "source": "https://github.com/narrowspark/http-emitter"
+        "issues": "https://github.com/narrowspark/php-library-template/issues",
+        "source": "https://github.com/narrowspark/php-library-template"
     }
 }

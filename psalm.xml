@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<psalm
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config/vendor/vimeo/psalm/config.xsd"
+    cacheDirectory="./.build/psalm"
+    errorBaseline="psalm-baseline.xml"
+    resolveFromConfigFile="true"
+    allowStringToStandInForClass='true'
+    findUnusedCode='true'
+    findUnusedVariablesAndParams='true'
+    strictBinaryOperands='true'
+    totallyTyped='true'
+    usePhpDocMethodsWithoutMagicCall='true'
+    phpVersion='8.0'
+    errorLevel='8'
+>
+    <issueHandlers>
+        <LessSpecificReturnType errorLevel="info"/>
+    </issueHandlers>
+
+    <plugins>
+        <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
+        <pluginClass class="Psalm\MockeryPlugin\Plugin"/>
+    </plugins>
+
+    <projectFiles>
+        <directory name="src"/>
+        <directory name="tests"/>
+        <ignoreFiles>
+            <directory name="vendor"/>
+            <directory name=".build"/>
+            <directory name=".docker"/>
+            <directory name=".github"/>
+        </ignoreFiles>
+    </projectFiles>
+
+    <issueHandlers>
+        <PossiblyUndefinedIntArrayOffset errorLevel="error"/>
+        <PossiblyUndefinedStringArrayOffset errorLevel="error"/>
+    </issueHandlers>
+</psalm>

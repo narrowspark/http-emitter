@@ -1,37 +1,38 @@
 <?php
+
+declare(strict_types=1);
+
+use Ergebnis\License;
 use Narrowspark\CS\Config\Config;
 
-$header = <<<'EOF'
-This file is part of Narrowspark.
+$license = License\Type\MIT::markdown(
+    __DIR__ . '/LICENSE.md',
+    License\Range::since(
+        License\Year::fromString('2017'),
+        new \DateTimeZone('UTC')
+    ),
+    License\Holder::fromString('Daniel Bannert'),
+    License\Url::fromString('https://github.com/narrowspark/http-emitter')
+);
 
-(c) Daniel Bannert <d.bannert@anolilab.de>
+$license->save();
 
-This source file is subject to the MIT license that is bundled
-with this source code in the file LICENSE.
-EOF;
+$config = new Config($license->header(), []);
 
-$config = new Config($header, [
-    'native_function_invocation' => [
-        'exclude' => [
-            'headers_sent',
-            'header',
-        ],
-    ],
-    'static_lambda' => false,
-]);
 $config->getFinder()
     ->files()
     ->in(__DIR__)
-    ->exclude('build')
-    ->exclude('vendor')
-    ->notPath('src/Viserio/Component/Validation/Sanitizer.php')
-    ->notPath('src/Viserio/Component/WebProfiler/Resources/views/webprofiler.html.php')
+    ->exclude([
+        '.build',
+        '.dependabot',
+        '.docker',
+        '.github',
+        'vendor',
+    ])
     ->name('*.php')
     ->ignoreDotFiles(true)
     ->ignoreVCS(true);
 
-$cacheDir = getenv('TRAVIS') ? getenv('HOME') . '/.php-cs-fixer' : __DIR__;
-
-$config->setCacheFile($cacheDir . '/.php_cs.cache');
+$config->setCacheFile(__DIR__ . '/.build/php-cs-fixer/.php_cs.cache');
 
 return $config;

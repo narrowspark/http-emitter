@@ -1,16 +1,33 @@
+services:
+    -
+        class: Symplify\PHPStanRules\ObjectCalisthenics\Rules\NoChainMethodCallRule
+        tags: [phpstan.rules.rule]
+        arguments:
+            allowedChainTypes:
+                - Laminas\Diactoros\Request
+                - Laminas\Diactoros\Response
+                - Laminas\Diactoros\ServerRequest
+                - Laminas\Diactoros\Stream
+                - Laminas\Diactoros\UploadedFile
+                - Laminas\Diactoros\Uri
+                - Psr\Http\Message\MessageInterface
+                - Psr\Http\Message\RequestInterface
+                - Psr\Http\Message\ResponseInterface
+                - Psr\Http\Message\ServerRequestInterface
+                - Psr\Http\Message\StreamInterface
+                - Psr\Http\Message\UploadedFileInterface
+                - Psr\Http\Message\UriInterface
+
+
 includes:
-#    - vendor/pepakriz/phpstan-exception-rules/extension.neon
-    - vendor/phpstan/phpstan-deprecation-rules/rules.neon
-    - vendor/phpstan/phpstan-mockery/extension.neon
-    - vendor/phpstan/phpstan-phpunit/extension.neon
-    - vendor/phpstan/phpstan-phpunit/rules.neon
-    - vendor/phpstan/phpstan-strict-rules/rules.neon
-#    - vendor/thecodingmachine/phpstan-strict-rules/phpstan-strict-rules.neon
+    - vendor/narrowspark/coding-standard/base_rules.neon
+    - phpstan-baseline.neon
+    - vendor/thecodingmachine/phpstan-safe-rule/phpstan-safe-rule.neon
     - vendor/phpstan/phpstan/conf/bleedingEdge.neon
 
 parameters:
-    level: max
-    inferPrivatePropertyTypeFromConstructor: true
+    paths:
+        -  %currentWorkingDirectory%/src
+        -  %currentWorkingDirectory%/tests
 
-    autoload_directories:
-        - %currentWorkingDirectory%/src
+    tmpDir: %currentWorkingDirectory%/.build/phpstan

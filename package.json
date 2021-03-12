@@ -1,0 +1,13 @@
+{
+  "name": "php-library-template",
+  "version": "0.0.0-development",
+  "private": true,
+  "scripts": {
+    "lint": "textlint ./.build/ISSUE_TEMPLATE/** ./src/** ./docs/** ./README.md ./UPGRADE.md --dry-run",
+    "lint:fix": "textlint ./.build/ISSUE_TEMPLATE/** ./src/** ./docs/** ./README.md ./UPGRADE.md --fix",
+    "prepublishOnly": "if [ \"$CI\" = '' ]; then node -p 'JSON.parse(process.env.npm_package_config_manualPublishMessage)'; exit 1; fi"
+  },
+  "dependencies": {
+    "@anolilab/textlint-config": "^1.0.1"
+  }
+}
