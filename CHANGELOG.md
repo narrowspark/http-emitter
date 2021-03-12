@@ -3,7 +3,7 @@
 
 ### ⚠ BREAKING CHANGES
 
-* dropping support for php8
+* dropping support for php7
 
 ### Features
 
