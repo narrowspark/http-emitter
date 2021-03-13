@@ -24,7 +24,7 @@ jobs:
                 dependencies: ["highest", "lowest", "locked"]
 
         env:
-            key: "continuous-integration-linux-v1" # change key (version) to clear cache
+            key: "continuous-integration-linux-v2" # change key (version) to clear cache
             extensions: "mbstring"
             ini-values: "date.timezone=Europe/Berlin, opcache.enable_cli=0, serialize_precision=14"
             tools: "composer"

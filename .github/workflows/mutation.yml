@@ -24,7 +24,7 @@ jobs:
                 dependencies: ["locked"]
 
         env:
-            key: "mutation-v1" # change key (version) to clear cache
+            key: "mutation-v2" # change key (version) to clear cache
             min-covered-msi: 100
             min-msi: 100
             extensions: "mbstring"

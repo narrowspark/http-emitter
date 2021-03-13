@@ -26,7 +26,7 @@ jobs:
                 dependencies: ["locked"]
 
         env:
-            key: "continuous-integration-linux-v1" # change key (version) to clear cache
+            key: "semantic-release-linux-v1" # change key (version) to clear cache
             extensions: "mbstring"
             ini-values: "date.timezone=Europe/Berlin, assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=0, opcache.optimization_level=-1, opcache.jit=1255, opcache.jit_buffer_size=32M, serialize_precision=14"
             tools: "composer"
