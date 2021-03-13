@@ -79,7 +79,7 @@
         "test:coverage": "phpunit --coverage-html=./.build/phpunit/coverage"
     },
     "support": {
-        "issues": "https://github.com/narrowspark/php-library-template/issues",
-        "source": "https://github.com/narrowspark/php-library-template"
+        "issues": "https://github.com/narrowspark/http-emitter/issues",
+        "source": "https://github.com/narrowspark/http-emitter"
     }
 }
