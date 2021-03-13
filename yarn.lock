@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@anolilab/textlint-config@^1.0.1":
+"@anolilab/textlint-config@1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@anolilab/textlint-config/-/textlint-config-1.0.1.tgz#90cac8e94f7d3757e6c028f4d7a936830edafc0c"
   integrity sha512-yftAwFBmjRHygpT3kUzta8sB0pE1GD08mdW6tXL5SjeEFo//lnlGGxgwnb3DNEl0ui86LQVIDnEmvkdQzRS2Fg==
