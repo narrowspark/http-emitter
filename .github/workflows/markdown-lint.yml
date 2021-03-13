@@ -35,12 +35,12 @@ jobs:
               env:
                   GIT_USER_EMAIL: "${{ secrets.GIT_USER_EMAIL }}"
                   GIT_USER_USERNAME: "${{ secrets.GIT_USER_USERNAME }}"
-                  run: |
-                      EMAIL=${GIT_USER_EMAIL:-"github-actions[bot]@users.noreply.github.com"}
-                      NAME=${GIT_USER_USERNAME:-"github-actions-shell"}
+              run: |
+                  EMAIL=${GIT_USER_EMAIL:-"github-actions[bot]@users.noreply.github.com"}
+                  NAME=${GIT_USER_USERNAME:-"github-actions-shell"}
 
-                      git config --global user.email "${EMAIL}"
-                      git config --global user.name "${NAME}"
+                  git config --global user.email "${EMAIL}"
+                  git config --global user.name "${NAME}"
 
             - name: "Get yarn cache directory path"
               id: "yarn-cache-dir-path"
