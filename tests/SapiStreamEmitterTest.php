@@ -330,6 +330,7 @@ final class SapiStreamEmitterTest extends AbstractEmitterTest
      * @psalm-param null|array{0: int, 1: int} $rangeBlocks
      *
      * @dataProvider provideEmitMemoryUsageCases
+     * @runInSeparateProcess
      */
     public function testEmitMemoryUsage(
         bool $seekable,

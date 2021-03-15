@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Add regex101\\.com link to that shows the regex in practise, so it will be easier to maintain in case of bug/extension in the future$#"
+			count: 1
+			path: src/SapiStreamEmitter.php
+
+		-
 			message: "#^Post operation are forbidden, as they make 2 values at the same line\\. Use pre instead$#"
 			count: 1
 			path: src/Util.php

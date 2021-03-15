@@ -24,7 +24,7 @@ use function strlen;
  */
 final class SapiStreamEmitter extends AbstractSapiEmitter
 {
-    private const CONTENT_PATTERN = '/(?P<unit>[\w]+)\s+(?P<first>\d+)-(?P<last>\d+)\/(?P<length>\d+|\*)/';
+    private const CONTENT_PATTERN_REGEX = '/(?P<unit>[\w]+)\s+(?P<first>\d+)-(?P<last>\d+)\/(?P<length>\d+|\*)/';
 
     /**
      * Maximum output buffering size for each iteration.
@@ -74,7 +74,7 @@ final class SapiStreamEmitter extends AbstractSapiEmitter
      */
     private function parseContentRange(string $header): ?array
     {
-        if (preg_match(self::CONTENT_PATTERN, $header, $matches) === 1) {
+        if (preg_match(self::CONTENT_PATTERN_REGEX, $header, $matches) === 1) {
             return [
                 (string) $matches['unit'],
                 (int) $matches['first'],
