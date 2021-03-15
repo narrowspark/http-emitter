@@ -29,8 +29,8 @@ module.exports = {
                         "files": [
                             "composer.json"
                         ],
-                        "from": "\"dev-master\": \".*\"",
-                        "to": "\"dev-master\": \"${nextRelease.version.replace(/\\.\\w+$/, '-dev')}\"",
+                        "from": "\"dev-main\": \".*\"",
+                        "to": "\"dev-main\": \"${nextRelease.version.replace(/\\.\\w+$/, '-dev')}\"",
                     }
                 ]
             }
