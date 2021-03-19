@@ -24,7 +24,7 @@ jobs:
                 dependencies: ["locked"]
 
         env:
-            key: "rector-ci-v2" # change key (version) to clear cache
+            key: "rector-ci-v3" # change key (version) to clear cache
             extensions: "mbstring, intl"
             ini-values: "date.timezone=Europe/Berlin, assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=0, opcache.optimization_level=-1, opcache.jit=1255, opcache.jit_buffer_size=32M, serialize_precision=14"
             tools: "composer, cs2pr"
@@ -89,28 +89,10 @@ jobs:
             - name: "Validate composer.json and composer.json"
               run: "composer validate --strict"
 
-            - name: "Get Composer Cache Directory"
-              id: "composer-cache"
-              run: "echo '::set-output name=dir::$(composer config cache-files-dir)'"
-
-            - name: "Cache dependencies"
-              uses: "actions/cache@v2"
+            - name: "Install dependencies with Composer"
+              uses: "ramsey/composer-install@v1"
               with:
-                  path: "${{ steps.composer-cache.outputs.dir }}"
-                  key: "${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-${{ hashFiles('composer.json') }}"
-                  restore-keys: "${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ matrix.dependencies }}-"
-
-            - name: "Install locked dependencies"
-              if: "matrix.dependencies == 'locked'"
-              run: "composer install --no-progress --no-interaction --ansi"
-
-            - name: "Install highest dependencies"
-              if: "matrix.dependencies == 'highest'"
-              run: "composer update --no-progress --no-interaction --ansi"
-
-            - name: "Install lowest dependencies"
-              if: "matrix.dependencies == 'lowest'"
-              run: "composer update --no-progress --no-interaction --ansi --prefer-lowest --prefer-stable"
+                  dependency-versions: "${{ matrix.dependencies }}"
 
             - name: "Rector lint"
               run: "composer rector -- --no-progress-bar"
