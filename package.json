@@ -8,6 +8,6 @@
     "prepublishOnly": "if [ \"$CI\" = '' ]; then node -p 'JSON.parse(process.env.npm_package_config_manualPublishMessage)'; exit 1; fi"
   },
   "dependencies": {
-    "@anolilab/textlint-config": "^1.0.1"
+    "@anolilab/textlint-config": "^2.0.0"
   }
 }
