@@ -243,7 +243,7 @@ jobs:
                   path: "./clover"
 
             - name: "Send code coverage report to Codecov.io"
-              uses: "codecov/codecov-action@v1"
+              uses: codecov/codecov-action@v2
               with:
                   directory: "${{steps.download.outputs.download-path}}"
                   fail_ci_if_error: true
