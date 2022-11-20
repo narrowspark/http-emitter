@@ -92,7 +92,7 @@ jobs:
               run: "composer cs -- --diff --diff-format=udiff --verbose"
 
             - name: "Commit modified files"
-              uses: "stefanzweifel/git-auto-commit-action@v4.9.1"
+              uses: "stefanzweifel/git-auto-commit-action@v4.15.4"
               with:
                   commit_author: "Daniel Bannert <d.banner@anolilab.de>"
                   commit_message: "Enhancement: Update license year"
